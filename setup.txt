@@ -1,0 +1,25 @@
+Initialize with tailwind:
+
+    npx create-next-app@latest leo_blog+
+    // say no to turbopack
+    cd leo-blog
+    npm install
+    npm install -D tailwindcss postcss autoprefixer
+    npx tailwindcss init -p
+
+In tailwind.ts, add
+        content: [
+        "./pages/**/*.{js,ts,jsx,tsx}",
+        "./components/**/*.{js,ts,jsx,tsx}",
+        ],
+
+For mdx:
+    npm install @next/mdx @mdx-js/react gray-matter
+        add in next.config.js:
+                const withMDX = require('@next/mdx')()
+                module.exports = withMDX({
+                    pageExtensions: ['js', 'jsx', 'mdx'],
+                })
+
+Charts:
+    npm install recharts

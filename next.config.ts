@@ -1,7 +1,18 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
+import withMDX from '@next/mdx' // you'll need to install this
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  reactStrictMode: true,
+  experimental: {
+    // @ts-expect-error: serverActions is experimental and not typed yet
+    serverActions: true,
+  },
+}
 
-export default nextConfig;
+export default withMDX({
+  extension: /\.mdx?$/,
+  options: {
+    remarkPlugins: [],
+    rehypePlugins: [],
+  },
+})(nextConfig)
