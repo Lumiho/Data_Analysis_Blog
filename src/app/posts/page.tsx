@@ -50,7 +50,7 @@ export default async function BlogPage() {
         <div className="pattern-overlay absolute inset-0 opacity-40"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-4xl font-bold text-white mb-4">
-            Blog Posts
+            Latest Posts
           </h1>
           <p className="text-xl text-blue-100">
             Discover insights about data analysis, visualization, and more
@@ -102,7 +102,7 @@ export default async function BlogPage() {
                 {/* Title */}
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   <a
-                    href={`/blog/${post.slug}`}
+                    href={`/posts/${post.slug}`}
                     className="hover:text-[#B8860B] dark:hover:text-[#B8860B]"
                   >
                     {post.title}

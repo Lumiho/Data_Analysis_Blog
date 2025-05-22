@@ -1,4 +1,4 @@
-import createMDX from '@next/mdx'
+const createMDX = require('@next/mdx')
 
 const withMDX = createMDX({
   options: {
@@ -12,4 +12,4 @@ const nextConfig = {
   pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
 }
 
-export default nextConfig
+module.exports = withMDX(nextConfig) 

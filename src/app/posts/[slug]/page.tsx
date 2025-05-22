@@ -6,12 +6,6 @@ import { compileMDX } from 'next-mdx-remote/rsc'
 
 export const dynamicParams = false
 
-interface BlogPostProps {
-  params: {
-    slug: string
-  }
-}
-
 interface Frontmatter {
   title: string
   date: string
@@ -32,7 +26,11 @@ export async function generateStaticParams() {
     }))
 }
 
-export default async function BlogPost({ params }: BlogPostProps) {
+export default async function BlogPost({
+  params,
+}: Readonly<{
+  params: Readonly<{ slug: string }>
+}>) {
   const postsDirectory = path.join(process.cwd(), 'src', 'posts')
   const filePath = path.join(postsDirectory, `${params.slug}.mdx`)
 

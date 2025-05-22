@@ -55,7 +55,7 @@ export default async function Home() {
             Exploring the world of data science, analysis, and modern development practices
           </p>
           <Link 
-            href="/blog" 
+            href="/posts" 
             className="inline-block bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-blue-50 transition-colors"
           >
             View All Posts
@@ -77,7 +77,7 @@ export default async function Home() {
             {posts.map(post => (
               <Link 
                 key={post.slug}
-                href={`/blog/${post.slug}`}
+                href={`/posts/${post.slug}`}
                 className="group block"
               >
                 <article className="h-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-[#B8860B] dark:hover:border-[#B8860B] transition-colors">

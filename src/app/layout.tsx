@@ -39,10 +39,10 @@ export default function RootLayout({
                   Home
                 </Link>
                 <Link 
-                  href="/blog" 
-                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  href="/posts" 
+                  className="text-gray-600 dark:text-gray-300 hover:text-[#B8860B] dark:hover:text-[#B8860B] transition-colors"
                 >
-                  Blog
+                  Posts
                 </Link>
                 <Link 
                   href="/about" 
@@ -89,8 +89,8 @@ export default function RootLayout({
                 <ul className="mt-4 space-y-4">
                   <li>
                     <Link 
-                      href="/blog" 
-                      className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      href="/posts" 
+                      className="text-gray-600 dark:text-gray-400 hover:text-[#B8860B] dark:hover:text-[#B8860B] transition-colors"
                     >
                       All Posts
                     </Link>
@@ -114,12 +114,12 @@ export default function RootLayout({
                 <ul className="mt-4 space-y-4">
                   <li>
                     <a 
-                      href="https://twitter.com" 
+                      href="https://www.linkedin.com/in/leonardo-zavala-jimenez-651801210"
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className="text-gray-600 dark:text-gray-400 hover:text-[#B8860B] dark:hover:text-[#B8860B] transition-colors"
                     >
-                      Twitter
+                      LinkedIn
                     </a>
                   </li>
                   <li>
@@ -127,9 +127,17 @@ export default function RootLayout({
                       href="https://github.com" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className="text-gray-600 dark:text-gray-400 hover:text-[#B8860B] dark:hover:text-[#B8860B] transition-colors"
                     >
                       GitHub
+                    </a>
+                  </li>
+                  <li>
+                    <a 
+                      href="mailto:zavalaleo715@yahoo.com"
+                      className="text-gray-600 dark:text-gray-400 hover:text-[#B8860B] dark:hover:text-[#B8860B] transition-colors"
+                    >
+                      zavalaleo715@yahoo.com
                     </a>
                   </li>
                 </ul>
