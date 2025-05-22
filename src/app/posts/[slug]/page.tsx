@@ -26,11 +26,11 @@ export async function generateStaticParams() {
     }))
 }
 
-export default async function BlogPost({
-  params,
-}: Readonly<{
-  params: Readonly<{ slug: string }>
-}>) {
+interface PageProps {
+  params: { slug: string }
+}
+
+const BlogPost = async ({ params }: PageProps) => {
   const postsDirectory = path.join(process.cwd(), 'src', 'posts')
   const filePath = path.join(postsDirectory, `${params.slug}.mdx`)
 
@@ -113,3 +113,5 @@ export default async function BlogPost({
     return notFound()
   }
 }
+
+export default BlogPost
