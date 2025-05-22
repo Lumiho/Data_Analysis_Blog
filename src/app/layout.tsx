@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Data Analysis Blog",
+  title: "Leo's Data Analysis Blog",
   description: "Exploring data science, analysis, and modern development practices",
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({
               <Link href="/" className="flex items-center space-x-2">
                 <span className="text-2xl">📊</span>
                 <span className="font-bold text-xl text-gray-900 dark:text-white">
-                  Data Blog
+                  Leo's Data Blog
                 </span>
               </Link>
 
@@ -73,7 +73,7 @@ export default function RootLayout({
                 <Link href="/" className="flex items-center space-x-2">
                   <span className="text-2xl">📊</span>
                   <span className="font-bold text-xl text-gray-900 dark:text-white">
-                    Data Blog
+                    Leo's Data Blog
                   </span>
                 </Link>
                 <p className="mt-4 text-gray-600 dark:text-gray-400">
