@@ -1,0 +1,129 @@
+---
+title: "Sleep Health & Lifestyle Analysis: A Comprehensive Data Study"
+date: "2025-01-19"
+summary: "An in-depth analysis of sleep patterns and their correlations with lifestyle factors, including physical activity, stress levels, occupation, and demographic variables."
+author: "Leonardo Zavala-Jimenez"
+readingTime: "12"
+tags: ["data analysis", "health", "sleep", "lifestyle", "python", "visualization", "statistics"]
+---
+
+# Sleep Health & Lifestyle Analysis: A Comprehensive Data Study
+
+This analysis explores the relationship between sleep patterns and various lifestyle factors using a dataset of sleep health and lifestyle information. It covers sleep duration, quality, and their correlations with physical activity, stress levels, occupation, age, and gender. 
+
+Dataset Source: https://www.kaggle.com/datasets/orvile/health-and-sleep-relation-2024?resource=download
+
+## Exploratory Data Analysis
+
+### Sleep Duration Distribution
+
+Understanding the distribution of sleep duration across the population helps identify normal ranges and potential sleep issues. The histogram shows the frequency distribution, while the box plot reveals outliers and quartiles.
+
+![Sleep Duration Distribution](/graphs/sleep_health_and_lifestyle/sleep_duration_distribution.png)
+
+### Normality Test (QQ Plot)
+
+The Q-Q plot tests whether sleep duration follows a normal distribution. Points following the red line indicate normal distribution, while deviations suggest non-normal patterns.
+
+![QQ Plot for Sleep Duration](/graphs/sleep_health_and_lifestyle/qq_sleep_duration.png)
+
+## Correlation Analysis
+
+### Sleep Duration vs Quality
+
+This scatter plot explores the relationship between sleep duration and sleep quality. Understanding this correlation is crucial for optimizing sleep patterns.
+
+![Sleep Duration vs Quality](/graphs/sleep_health_and_lifestyle/sleep_duration_vs_quality.png)
+
+### Correlation Matrix
+
+The correlation heatmap shows relationships between all numeric variables in the dataset. Red indicates positive correlations, blue indicates negative correlations, and white indicates no correlation.
+
+![Correlation Heatmap](/graphs/sleep_health_and_lifestyle/correlation_heatmap.png)
+
+## Interactive Analysis
+
+### Interactive Sleep Quality Analysis
+
+This interactive visualization allows you to explore the relationship between sleep duration and quality, with additional dimensions showing stress levels (color) and physical activity (size). Hover over points to see detailed information about occupation and age.
+
+**[View Interactive Visualization](/graphs/sleep_health_and_lifestyle/interactive_sleep_analysis.html)**
+
+*Click the link above to open the interactive visualization in a new tab.*
+
+## Demographic Analysis
+
+### Sleep Patterns by Age Groups
+
+Age can significantly impact sleep patterns. This analysis shows how sleep duration, quality, physical activity, and stress levels vary across different age groups.
+
+![Sleep Patterns by Age](/graphs/sleep_health_and_lifestyle/sleep_patterns_by_age.png)
+
+### Sleep Patterns by Gender
+
+Gender differences in sleep patterns are well-documented. This analysis compares sleep duration, quality, stress levels, and physical activity between males and females.
+
+![Sleep Patterns by Gender](/graphs/sleep_health_and_lifestyle/sleep_patterns_by_gender.png)
+
+### Sleep Duration by Occupation
+
+Different occupations may have varying demands and schedules that affect sleep patterns. This analysis shows average sleep duration across different professional categories.
+
+![Sleep by Occupation](/graphs/sleep_health_and_lifestyle/sleep_by_occupation.png)
+
+## Lifestyle Factors Impact
+
+### Impact of Lifestyle Factors on Sleep
+
+Lifestyle choices significantly influence sleep quality and duration. This analysis explores how physical activity, stress levels, daily steps, and heart rate correlate with sleep patterns.
+
+![Lifestyle Factors Impact](/graphs/sleep_health_and_lifestyle/lifestyle_factors_impact.png)
+
+## Key Insights
+
+### Sleep Duration Patterns
+- Most people sleep between 6-8 hours per night
+- Sleep duration varies significantly by occupation
+- Age groups show different sleep patterns
+
+### Quality Factors
+- Physical activity positively correlates with sleep quality
+- Stress levels negatively impact sleep duration
+- Higher daily step counts improve sleep quality
+
+### Demographic Trends
+- Gender differences exist in sleep patterns
+- Age affects both sleep duration and quality
+- Occupation type influences sleep schedules
+
+### Health Implications
+- Heart rate shows correlation with sleep patterns
+- Stress management is crucial for good sleep
+- Regular physical activity supports better sleep
+
+## Methodology
+
+### Data Analysis Process
+
+1. **Data Cleaning:** Removed missing values and standardized variable names
+2. **Exploratory Analysis:** Created distribution plots and summary statistics
+3. **Correlation Analysis:** Calculated correlation coefficients between variables
+4. **Group Analysis:** Analyzed patterns by demographic factors (age, gender, occupation)
+5. **Lifestyle Impact:** Examined how lifestyle factors influence sleep patterns
+6. **Visualization:** Created both static and interactive visualizations for comprehensive understanding
+
+## Technical Implementation
+
+The analysis was conducted using Python with the following libraries:
+- **pandas** for data manipulation
+- **matplotlib** and **seaborn** for static visualizations
+- **plotly** for interactive visualizations
+- **scipy** for statistical analysis
+
+The visualizations are automatically generated from the dataset and saved to organized directories for easy access and maintenance.
+
+## Conclusion
+
+This comprehensive analysis reveals important insights about sleep patterns and their relationship with lifestyle factors. The findings suggest that sleep quality is influenced by multiple factors including physical activity, stress levels, and demographic characteristics. Understanding these relationships can help individuals optimize their sleep habits and improve overall health outcomes.
+
+The interactive visualizations allow for deeper exploration of the data, while the statistical analysis provides quantitative evidence of these relationships. This type of analysis demonstrates the power of data science in understanding complex health-related phenomena. 
