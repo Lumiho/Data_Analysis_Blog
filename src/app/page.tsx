@@ -54,12 +54,20 @@ export default async function Home() {
           <p className="text-xl text-blue-100 mb-8">
             Exploring the world of data science, analysis, and modern development practices
           </p>
-          <Link 
-            href="/posts" 
-            className="inline-block bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-blue-50 transition-colors"
-          >
-            View All Posts
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              href="/posts" 
+              className="inline-block bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-blue-50 transition-colors"
+            >
+              View All Posts
+            </Link>
+            <Link 
+              href="/about" 
+              className="inline-block bg-transparent text-white border-2 border-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+            >
+              About Me
+            </Link>
+          </div>
         </div>
         
         {/* Decorative elements */}

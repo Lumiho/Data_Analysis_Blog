@@ -65,7 +65,7 @@ export default function RootLayout({
         {children}
 
         {/* Footer */}
-        <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+        <footer className="bg-amber-50 dark:bg-amber-900/20 border-t-4 border-[#B8860B]">
           <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Brand */}
@@ -144,7 +144,7 @@ export default function RootLayout({
               </div>
             </div>
 
-            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
+            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <p className="text-center text-gray-500 dark:text-gray-400">
                 © {new Date().getFullYear()} Data Blog. All rights reserved.
               </p>

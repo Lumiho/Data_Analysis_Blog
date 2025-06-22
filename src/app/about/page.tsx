@@ -18,20 +18,33 @@ export default function AboutPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Personal Section */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Hello, I'm Leonardo Zavala
-          </h2>
-          <div className="prose dark:prose-invert">
-            <p className="text-lg text-gray-600 dark:text-gray-400">
-              I'm a senior at the University of California - Davis pursuing a <strong>Computer Science</strong> degree with a minor in <strong>Statistics</strong>. 
-              My passion lies in developing efficient, functional <strong>software solutions</strong> and exploring <strong>data analysis</strong>. I combine 
-              <strong> programming expertise</strong> with <strong>statistical knowledge</strong> to create meaningful applications and uncover valuable insights.
-            </p>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mt-4">
-              This blog serves as both a learning journey and a platform to share my experiences in <strong>software development</strong> and <strong>data science</strong>. 
-              Through hands-on projects and analysis, I focus on building <strong>robust solutions</strong> while exploring ways to derive significant 
-              conclusions from data.
-            </p>
+          <div className="flex flex-col md:flex-row items-center md:items-center gap-8 md:gap-12">
+            {/* Introduction Text */}
+            <div className="flex-1 prose dark:prose-invert max-w-none">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Hello, I'm Leonardo Zavala
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
+                I'm a senior at the University of California - Davis pursuing a <strong>Computer Science</strong> degree with a minor in <strong>Statistics</strong>. 
+                My passion lies in developing efficient, functional <strong>software solutions</strong> and exploring <strong>data analysis</strong>. I combine 
+                <strong> programming expertise</strong> with <strong>statistical knowledge</strong> to create meaningful applications and uncover valuable insights.
+              </p>
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                This blog serves as both a learning journey and a platform to share my experiences in <strong>software development</strong> and <strong>data science</strong>. 
+                Through hands-on projects and analysis, I focus on building <strong>robust solutions</strong> while exploring ways to derive significant 
+                conclusions from data.
+              </p>
+            </div>
+            
+            {/* Profile Image */}
+            <div className="flex-shrink-0 mb-6 md:mb-0">
+              <img
+                src="/about/Headshot_'24.jpg"
+                alt="Leonardo Zavala Jimenez"
+                className="w-56 h-56 md:w-64 md:h-64 object-cover rounded-2xl shadow-lg border-4"
+                style={{ borderColor: '#B8860B' }}
+              />
+            </div>
           </div>
         </section>
 
@@ -42,7 +55,7 @@ export default function AboutPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Technical Background */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-xl border border-amber-200 dark:border-amber-800">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Technical Background
               </h3>
@@ -55,13 +68,13 @@ export default function AboutPage() {
             </div>
 
             {/* Skills & Interests */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-xl border border-amber-200 dark:border-amber-800">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Skills & Interests
               </h3>
               <ul className="space-y-2 text-gray-600 dark:text-gray-400">
+                <li>Application Development</li>
                 <li>Data Analysis & Visualization</li>
-                <li>Software Engineering</li>
                 <li>Machine Learning</li>
                 <li>System Design</li>
               </ul>
