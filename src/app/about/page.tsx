@@ -23,13 +23,13 @@ export default function AboutPage() {
           </h2>
           <div className="prose dark:prose-invert">
             <p className="text-lg text-gray-600 dark:text-gray-400">
-              I'm a senior at the University of California - Davis pursuing a Computer Science degree with a minor in Statistics. 
-              My passion lies in developing efficient, functional software solutions and exploring data analysis. I combine 
-              programming expertise with statistical knowledge to create meaningful applications and uncover valuable insights.
+              I'm a senior at the University of California - Davis pursuing a <strong>Computer Science</strong> degree with a minor in <strong>Statistics</strong>. 
+              My passion lies in developing efficient, functional <strong>software solutions</strong> and exploring <strong>data analysis</strong>. I combine 
+              <strong> programming expertise</strong> with <strong>statistical knowledge</strong> to create meaningful applications and uncover valuable insights.
             </p>
             <p className="text-lg text-gray-600 dark:text-gray-400 mt-4">
-              This blog serves as both a learning journey and a platform to share my experiences in software development and data science. 
-              Through hands-on projects and analysis, I focus on building robust solutions while exploring ways to derive significant 
+              This blog serves as both a learning journey and a platform to share my experiences in <strong>software development</strong> and <strong>data science</strong>. 
+              Through hands-on projects and analysis, I focus on building <strong>robust solutions</strong> while exploring ways to derive significant 
               conclusions from data.
             </p>
           </div>
@@ -60,8 +60,8 @@ export default function AboutPage() {
                 Skills & Interests
               </h3>
               <ul className="space-y-2 text-gray-600 dark:text-gray-400">
-                <li>Application Development</li>
                 <li>Data Analysis & Visualization</li>
+                <li>Software Engineering</li>
                 <li>Machine Learning</li>
                 <li>System Design</li>
               </ul>
