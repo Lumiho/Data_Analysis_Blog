@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         {/* Navigation */}
-        <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
+        <nav className="sticky top-0 z-50 bg-amber-50/80 dark:bg-amber-900/20 backdrop-blur-sm border-b border-[#B8860B]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               {/* Logo */}
@@ -53,7 +53,7 @@ export default function RootLayout({
               </div>
 
               {/* Mobile Menu Button */}
-              <button className="md:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <button className="md:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-[#B8860B] dark:hover:text-[#B8860B]">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>

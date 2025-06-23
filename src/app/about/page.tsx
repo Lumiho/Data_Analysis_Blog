@@ -2,13 +2,13 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 py-16 px-4">
+      <div className="relative bg-amber-50 dark:bg-amber-900/20 py-16 px-4 border-b-4 border-[#B8860B]">
         <div className="pattern-overlay absolute inset-0 opacity-40"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl font-bold text-white mb-4">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             About Me
           </h1>
-          <p className="text-xl text-blue-100">
+          <p className="text-xl text-gray-600 dark:text-gray-400">
             Computer Science Student & Software Developer
           </p>
         </div>
@@ -18,7 +18,7 @@ export default function AboutPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Personal Section */}
         <section className="mb-16">
-          <div className="flex flex-col md:flex-row items-center md:items-center gap-8 md:gap-12">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
             {/* Introduction Text */}
             <div className="flex-1 prose dark:prose-invert max-w-none">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
