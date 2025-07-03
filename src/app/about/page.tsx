@@ -9,7 +9,7 @@ export default function AboutPage() {
             About Me
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Computer Science Student & Software Developer
+            Software Developer, Data Analyst
           </p>
         </div>
       </div>
