@@ -105,7 +105,27 @@ analysis_goals = {
    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
    ```
 
-3. **Feature Relationships**
+3. **Quick Normality Assessment**
+   ```python
+   # Brief normality check for key variables
+   from scipy import stats
+   
+   def quick_normality_check(data, variable_name):
+       """
+       Quick normality assessment for EDA purposes
+       """
+       shapiro_stat, shapiro_p = stats.shapiro(data)
+       print(f"{variable_name}: W={shapiro_stat:.3f}, p={shapiro_p:.3f}")
+       return shapiro_p > 0.05
+   
+   # Check key variables
+   print("=== Quick Normality Check ===")
+   is_normal = quick_normality_check(df['target_variable'], 'Target Variable')
+   print(f"Appears normal: {is_normal}")
+   print("Note: Detailed testing will be done in Statistical Analysis section")
+   ```
+
+4. **Feature Relationships**
    ```python
    # Scatter plots for key relationships
    plt.scatter(df['feature1'], df['target'])
@@ -115,6 +135,8 @@ analysis_goals = {
    ```
 
 **Interpretation:** Show analytical thinking beyond just running code by explaining what patterns mean and their business implications.
+
+**Note on Normality Testing:** The quick normality check in EDA provides early insights to guide analysis decisions, while formal testing in the Statistical Analysis section ensures proper validation for reporting and model assumptions.
 
 ## IV. Model Selection
 
@@ -164,10 +186,19 @@ analysis_goals = {
 
 1. **Linear Regression Assumptions**
    ```python
-   # Normality of residuals
+   # Normality of residuals using Shapiro-Wilk test
    from scipy import stats
    residuals = y_true - y_pred
+   
+   # Shapiro-Wilk test for normality
+   shapiro_stat, shapiro_p = stats.shapiro(residuals)
+   print(f"Shapiro-Wilk Test Statistic: {shapiro_stat:.4f}")
+   print(f"P-value: {shapiro_p:.4f}")
+   print(f"Residuals are normal: {shapiro_p > 0.05}")
+   
+   # Alternative: Q-Q plot for visual assessment (less reliable)
    stats.probplot(residuals, dist="norm", plot=plt)
+   plt.title('Q-Q Plot of Residuals (Visual Assessment Only)')
    
    # Homoscedasticity
    plt.scatter(y_pred, residuals)
@@ -176,6 +207,8 @@ analysis_goals = {
    plt.ylabel('Residuals')
    plt.title('Residual Plot')
    ```
+   
+   **Note:** The Shapiro-Wilk test is preferred over Q-Q plots because it provides a quantitative, objective measure of normality. Q-Q plots can be misleading due to subjective interpretation and human bias in pattern recognition.
 
 2. **Outlier and Influence Analysis**
    ```python
@@ -196,6 +229,57 @@ analysis_goals = {
        vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
        return vif_data
    ```
+
+4. **Formal Normality Testing**
+   ```python
+   # Comprehensive Shapiro-Wilk testing for statistical validation
+   from scipy import stats
+   
+   def formal_normality_test(data, variable_name):
+       """
+       Formal normality testing for statistical analysis and reporting
+       """
+       shapiro_stat, shapiro_p = stats.shapiro(data)
+       
+       print(f"=== Formal Normality Test for {variable_name} ===")
+       print(f"Shapiro-Wilk Test Statistic: {shapiro_stat:.4f}")
+       print(f"P-value: {shapiro_p:.4f}")
+       print(f"Is normal (α=0.05): {shapiro_p > 0.05}")
+       
+       # Detailed interpretation
+       if shapiro_p > 0.05:
+           print("✓ Data appears to follow normal distribution")
+           print("✓ Parametric tests are appropriate")
+           print("✓ Linear regression assumptions may be met")
+       else:
+           print("✗ Data does not follow normal distribution")
+           print("✗ Consider non-parametric alternatives")
+           print("✗ Transform data or use robust methods")
+       
+       return shapiro_stat, shapiro_p
+   
+   # Test all key variables for formal reporting
+   print("=== Statistical Analysis: Normality Testing ===")
+   test_normality(df['target_variable'], 'Target Variable')
+   test_normality(df['feature1'], 'Feature 1')
+   test_normality(df['feature2'], 'Feature 2')
+   ```
+   
+   **Purpose of Formal Testing:**
+- **Statistical validation:** Formal hypothesis testing for model assumptions
+- **Reporting standards:** Required for publication and professional documentation
+- **Decision making:** Determines appropriate statistical methods
+- **Quality assurance:** Ensures analytical rigor
+
+**Why Shapiro-Wilk is the Gold Standard:**
+The Shapiro-Wilk test is considered the gold standard for normality testing because it:
+- **Quantitative measure:** Provides objective statistical measure rather than subjective visual interpretation
+- **Statistical power:** More powerful than other normality tests for detecting departures from normality
+- **Comprehensive assessment:** Accounts for the entire distribution, not just specific quantiles
+- **Robustness:** Less sensitive to sample size variations than visual methods
+- **Reliability:** Less prone to human bias and pattern recognition errors that can occur with Q-Q plots
+
+While Q-Q plots can be misleading due to human bias in interpretation and the tendency to see patterns where none exist, the Shapiro-Wilk test gives us a clear, statistical answer about whether our data meets the normality assumption required for parametric tests.
 
 ## VI. Analysis and Interpretation
 
@@ -347,6 +431,55 @@ def professional_analysis_workflow(data_path):
     return model, mse, r2
 ```
 
+## References and Further Reading
+
+### Statistical Methods and Best Practices
+1. **Shapiro, S. S., & Wilk, M. B. (1965).** An analysis of variance test for normality (complete samples). *Biometrika, 52(3-4), 591-611.*
+   - Original paper introducing the Shapiro-Wilk test
+
+2. **Field, A. (2017).** *Discovering Statistics Using IBM SPSS Statistics* (5th ed.). Sage Publications.
+   - Comprehensive guide to statistical analysis and assumption testing
+
+3. **Montgomery, D. C., Peck, E. A., & Vining, G. G. (2021).** *Introduction to Linear Regression Analysis* (6th ed.). Wiley.
+   - Industry standard for linear regression and model diagnostics
+
+### Data Analysis Frameworks
+4. **CRISP-DM (Cross-Industry Standard Process for Data Mining).** (2000). *CRISP-DM 1.0: Step-by-step data mining guide.*
+   - Industry standard framework for data mining and analysis projects
+
+5. **Wickham, H., & Grolemund, G. (2017).** *R for Data Science: Import, Tidy, Transform, Visualize, and Model Data.* O'Reilly Media.
+   - Modern approach to data science workflow
+
+### Normality Testing and Assumptions
+6. **Razali, N. M., & Wah, Y. B. (2011).** Power comparisons of Shapiro-Wilk, Kolmogorov-Smirnov, Lilliefors and Anderson-Darling tests. *Journal of Statistical Modeling and Analytics, 2(1), 21-33.*
+   - Comparison of normality tests showing Shapiro-Wilk's superior power
+
+7. **Thode, H. C. (2002).** *Testing for Normality.* Marcel Dekker.
+   - Comprehensive reference on normality testing methods
+
+### Model Diagnostics and Validation
+8. **Kutner, M. H., Nachtsheim, C. J., Neter, J., & Li, W. (2005).** *Applied Linear Statistical Models* (5th ed.). McGraw-Hill.
+   - Standard reference for linear model diagnostics and validation
+
+9. **Chatterjee, S., & Hadi, A. S. (2015).** *Regression Analysis by Example* (6th ed.). Wiley.
+   - Practical guide to regression analysis and diagnostics
+
+### Effect Size and Practical Significance
+10. **Cohen, J. (1988).** *Statistical Power Analysis for the Behavioral Sciences* (2nd ed.). Lawrence Erlbaum Associates.
+    - Definitive work on effect sizes and statistical power
+
+11. **Sawilowsky, S. S. (2009).** New effect size rules of thumb. *Journal of Modern Applied Statistical Methods, 8(2), 597-599.*
+    - Updated guidelines for interpreting effect sizes
+
+### Industry Applications
+12. **Provost, F., & Fawcett, T. (2013).** *Data Science for Business: What You Need to Know about Data Mining and Data-Analytic Thinking.* O'Reilly Media.
+    - Business-focused approach to data science and analysis
+
+13. **Davenport, T. H., & Harris, J. G. (2007).** *Competing on Analytics: The New Science of Winning.* Harvard Business School Press.
+    - How analytics drives business value and competitive advantage
+
 ## Conclusion
 
 This framework provides a systematic approach to data analysis that aligns with industry best practices. By following these steps, you ensure that your analysis is not only statistically sound but also practically useful and professionally communicated. Remember that good data analysis is iterative and requires attention to detail at every stage. Keep practicing and learning!
+
+The references above provide the theoretical foundation and practical guidance for implementing the methods described in this tutorial. They represent both academic rigor and industry best practices, ensuring that your analysis approach is both scientifically sound and professionally relevant.

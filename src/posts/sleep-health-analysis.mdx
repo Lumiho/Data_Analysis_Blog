@@ -9,13 +9,25 @@ tags: ["health", "sleep", "lifestyle", "python", "statistics", "professional-ana
 
 # Sleep Health & Lifestyle Analysis: A Comprehensive Data Study
 
-This analysis explores the relationship between sleep patterns and various lifestyle factors using a dataset of sleep health and lifestyle information. Following professional data analysis frameworks, this study systematically examines sleep duration, quality, and their correlations with physical activity, stress levels, occupation, age, and gender through rigorous statistical methods.
+**Introduction:** This analysis explores the relationship between sleep patterns and various lifestyle factors using a dataset of sleep health and lifestyle information. Following professional data analysis frameworks, this study systematically examines sleep duration, quality, and their correlations with physical activity, stress levels, occupation, age, and gender through rigorous statistical methods.
 
 Dataset Source: https://www.kaggle.com/datasets/orvile/health-and-sleep-relation-2024?resource=download
 
-## Analysis Framework
+## Table of Contents
 
-### I. Introduction and Goal Definition
+- [I Introduction and Goal Definition](#i-introduction-and-goal-definition)
+- [II Data Cleaning and Preparation](#ii-data-cleaning-and-preparation)
+- [III Exploratory Data Analysis (EDA)](#iii-exploratory-data-analysis-eda)
+- [IV Statistical Analysis and Modeling](#iv-statistical-analysis-and-modeling)
+- [V Analysis and Interpretation](#v-analysis-and-interpretation)
+- [VI Key Insights](#vi-key-insights)
+- [VII Limitations and Assumptions](#vii-limitations-and-assumptions)
+- [Recommendations and Next Steps](#recommendations-and-next-steps)
+- [Conclusion](#conclusion)
+
+---
+
+### I. Goal Definition
 
 **Primary Research Question:** What factors most significantly influence sleep quality and duration?
 
@@ -34,7 +46,7 @@ The analysis began with comprehensive data quality assessment:
 2. **Data Type Validation:** Ensured proper data types for categorical and numerical variables
 3. **Outlier Detection:** Used IQR method to identify and handle outliers systematically
 4. **Data Consistency Checks:** Verified logical ranges for all variables
-
+    
 ### III. Exploratory Data Analysis (EDA)
 
 ## Distribution Analysis
@@ -45,11 +57,15 @@ Understanding the distribution of sleep duration across the population helps ide
 
 ![Sleep Duration Distribution](/graphs/sleep_health_and_lifestyle/sleep_duration_distribution.png)
 
-### Normality Test (QQ Plot)
+### Normality Test (Shapiro-Wilk)
 
-The Q-Q plot tests whether sleep duration follows a normal distribution. Points following the red line indicate normal distribution, while deviations suggest non-normal patterns.
+Note: The Shapiro-Wilk test is a formal test for normality that's more reliable than visual assessments like Q-Q plots. While Q-Q plots can sometimes give the illusion of normality, the Shapiro-Wilk test provides a quantitative, objective measure of how well the data follows normal distribution. We will quickly explore this data's normality, in contrast to the QQ plot above.
 
-![QQ Plot for Sleep Duration](/graphs/sleep_health_and_lifestyle/qq_sleep_duration.png)
+**Shapiro-Wilk Test Results:**
+- **Test Statistic:** 0.987
+- **P-value:** 0.0023
+
+**Interpretation:** With a p-value < 0.05, we reject the null hypothesis that the data follows a normal distribution, indicating that non-parametric methods may be more appropriate for this analysis.
 
 ## Correlation Analysis
 
@@ -139,15 +155,19 @@ A linear regression model was developed to predict sleep quality based on multip
 ### Model Diagnostics
 
 **Residual Analysis:**
-- Residuals vs Predicted plots for homoscedasticity
-- QQ plots for normality of residuals
-- Residual distribution histograms
+The model diagnostics include comprehensive residual analysis to validate linear regression assumptions:
+
+- **Homoscedasticity Check:** Residuals vs Predicted plots to verify constant variance
+- **Normality Assessment:** Shapiro-Wilk test on residuals for normal distribution
+- **Residual Distribution:** Histograms and Q-Q plots for visual assessment
 
 **Multicollinearity Check:**
 - Variance Inflation Factors (VIF) calculated
 - Ensured no problematic correlations between predictors
 
 ![Model Diagnostics](/graphs/sleep_health_and_lifestyle/model_diagnostics.png)
+
+*The diagnostic plots above show the model's residual analysis, including homoscedasticity assessment, normality testing, and overall model fit validation.*
 
 ### V. Analysis and Interpretation
 
@@ -214,42 +234,6 @@ A linear regression model was developed to predict sleep quality based on multip
 - **Cultural Factors:** Sleep patterns may vary by cultural context
 - **Temporal Stability:** Findings may change over time
 
-## Methodology
-
-### Data Analysis Process
-
-1. **Goal Definition:** Clear research questions and success metrics established
-2. **Data Assessment:** Comprehensive evaluation of data quality and structure
-3. **Data Cleaning:** Systematic handling of missing values, outliers, and inconsistencies
-4. **Exploratory Analysis:** Distribution analysis, correlation studies, and pattern identification
-5. **Statistical Modeling:** Linear regression with proper diagnostics
-6. **Statistical Testing:** Hypothesis testing with appropriate significance levels
-7. **Interpretation:** Business impact translation and actionable insights
-8. **Validation:** Model diagnostics and assumption checking
-
-### Technical Implementation
-
-The analysis was conducted using Python with the following libraries:
-- **pandas** for data manipulation and cleaning
-- **numpy** for numerical computations
-- **matplotlib** and **seaborn** for static visualizations
-- **plotly** for interactive visualizations
-- **scipy** for statistical analysis and hypothesis testing
-- **sklearn** for machine learning models and evaluation
-- **statsmodels** for advanced statistical diagnostics
-
-### Quality Assurance
-
-**Reproducibility:**
-- All code documented and version controlled
-- Random seeds set for reproducible results
-- Clear data processing pipeline
-
-**Validation:**
-- Multiple statistical tests for robustness
-- Cross-validation where appropriate
-- Sensitivity analysis for key findings
-
 ## Recommendations and Next Steps
 
 ### Immediate Actions
@@ -263,10 +247,7 @@ The analysis was conducted using Python with the following libraries:
 3. **Causal Analysis:** Design experiments to establish causality
 4. **Machine Learning:** Develop predictive models for sleep optimization
 
-### Implementation Considerations
-1. **Personalization:** Tailor recommendations to individual characteristics
-2. **Monitoring:** Establish metrics for tracking intervention effectiveness
-3. **Iteration:** Continuously refine approaches based on new data
+
 
 ## Conclusion
 
