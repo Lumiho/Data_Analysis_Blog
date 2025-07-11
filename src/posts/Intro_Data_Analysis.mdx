@@ -11,6 +11,9 @@ tags: ["tutorial", "python", "statistics", "methodology", "professional"]
 
 Welcome to this comprehensive guide on professional data analysis! This framework outlines the systematic approach used in industry to ensure reliable, interpretable, and actionable results. Whether you're working in healthcare, finance, marketing, or research, these principles form the foundation of sound analytical practice.
 
+---
+
+
 ## I. Introduction and Goal Definition
 
 ### Goal Clarity and Dataset Definition
@@ -33,6 +36,8 @@ analysis_goals = {
     "stakeholders": ["marketing_team", "product_team", "executive_leadership"]
 }
 ```
+
+---
 
 ## II. Data Cleaning and Preparation
 
@@ -138,6 +143,8 @@ analysis_goals = {
 
 **Note on Normality Testing:** The quick normality check in EDA provides early insights to guide analysis decisions, while formal testing in the Statistical Analysis section ensures proper validation for reporting and model assumptions.
 
+---
+
 ## IV. Model Selection
 
 ### Systematic Approach to Model Choice
@@ -175,6 +182,8 @@ analysis_goals = {
    def calculate_aic(n, mse, k):
        return n * np.log(mse) + 2*k
    ```
+
+---
 
 ## V. Model Diagnostics
 
@@ -281,6 +290,8 @@ The Shapiro-Wilk test is considered the gold standard for normality testing beca
 
 While Q-Q plots can be misleading due to human bias in interpretation and the tendency to see patterns where none exist, the Shapiro-Wilk test gives us a clear, statistical answer about whether our data meets the normality assumption required for parametric tests.
 
+---
+
 ## VI. Analysis and Interpretation
 
 ### Results Communication and Business Impact
@@ -319,6 +330,8 @@ While Q-Q plots can be misleading due to human bias in interpretation and the te
        percentage_change = (predicted_change / baseline_value) * 100
        return f"Changing {feature_change} units results in {percentage_change:.1f}% change"
    ```
+
+---
 
 ## VII. Conclusion and Next Steps
 

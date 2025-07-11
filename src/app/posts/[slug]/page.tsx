@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { notFound } from 'next/navigation'
 import { compileMDX } from 'next-mdx-remote/rsc'
+import SectionIndicator from '@/components/SectionIndicator'
 
 export const dynamicParams = false
 
@@ -47,6 +48,7 @@ const BlogPost = async ({ params }: PageProps) => {
 
     return (
       <main className="min-h-screen bg-white dark:bg-gray-900">
+        <SectionIndicator />
         <article className="max-w-3xl mx-auto px-4 py-12">
           {/* Header Section */}
           <header className="mb-12 text-center">

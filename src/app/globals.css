@@ -31,9 +31,12 @@ body {
 hr {
   border: none;
   height: 3px;
-  background: linear-gradient(to right, transparent, #666, transparent);
+  background: linear-gradient(to right, transparent, #B8860B, transparent);
   margin: 2rem 0;
   border-radius: 2px;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
 }
 
 /* Darker horizontal rule for better visibility */
@@ -51,4 +54,34 @@ hr.dark-divider {
   background-size: 80px 140px;
   background-position: 0 0, 0 0, 40px 70px, 40px 70px;
   background-color: transparent;
+}
+
+/* Section background styles */
+.section-gold {
+  background-color: rgba(184, 134, 11, 0.15);
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border-bottom: 3px solid #B8860B;
+}
+
+.section-white {
+  background-color: #FFFFFF;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border: 1px solid #E5E5E5;
+  border-bottom: 3px solid #B8860B;
+}
+
+/* Reduce spacing between list items */
+.prose ul li,
+.prose ol li {
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+.prose ul li:last-child,
+.prose ol li:last-child {
+  margin-bottom: 0;
 }
