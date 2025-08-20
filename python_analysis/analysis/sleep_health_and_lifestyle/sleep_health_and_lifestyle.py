@@ -162,11 +162,11 @@ print(summary_stats)
 # 2. Distribution Analysis
 print("\n2. Distribution Analysis:")
 
-# Sleep Duration Distribution with Normality Test
+# Figure scaling
 plt.figure(figsize=(15, 10))
 
 # Sleep Duration Distribution
-plt.subplot(2, 3, 1)
+plt.subplot(2, 3, 1) # in a 2x3 subgrid, place this in position 1, then next one in 2, etc
 plt.hist(df_clean['Sleep Duration'], bins=15, alpha=0.7, color='skyblue', edgecolor='black')
 plt.title('Sleep Duration Distribution')
 plt.xlabel('Sleep Duration (hours)')
