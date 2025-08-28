@@ -13,11 +13,8 @@ Welcome to this comprehensive guide on professional data analysis! This framewor
 
 ---
 
-
 ## I. Introduction and Goal Definition
-
 ### Goal Clarity and Dataset Definition
-
 **Industry Alignment:** Goal clarity and dataset definition are key in any professional analysis. This mirrors how industry reports or executive summaries are structured.
 
 **Key Components:**
@@ -40,9 +37,7 @@ analysis_goals = {
 ---
 
 ## II. Data Cleaning and Preparation
-
 ### Data Quality Assessment
-
 **Industry Alignment:** Data cleaning is the foundation of reliable analysis. Poor data quality leads to poor decisions in any industry.
 
 **Critical Steps:**
@@ -75,6 +70,8 @@ analysis_goals = {
    df['age'].describe()  # Should be reasonable range
    df['date'].min(), df['date'].max()  # Should be logical timeline
    ```
+
+---
 
 ## III. Exploratory Data Analysis (EDA)
 
@@ -110,24 +107,24 @@ analysis_goals = {
    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
    ```
 
-3. **Quick Normality Assessment**
+3. **Residual Plot Diagnostics**
    ```python
-   # Brief normality check for key variables
-   from scipy import stats
-   
-   def quick_normality_check(data, variable_name):
-       """
-       Quick normality assessment for EDA purposes
-       """
+   # Confirm whether or not assumptions are met for Normality, Homoscedasticity (constant variance), Linearity
+   # Plot residual plots, normality will be tested with shapiro wilks instead.
+
+   def normality_check(data, variable_name):
        shapiro_stat, shapiro_p = stats.shapiro(data)
        print(f"{variable_name}: W={shapiro_stat:.3f}, p={shapiro_p:.3f}")
        return shapiro_p > 0.05
-   
+       
+   def linear_check(data):
+      pass
+   def homoscedasticity_check(data):
+      pass
+
    # Check key variables
-   print("=== Quick Normality Check ===")
-   is_normal = quick_normality_check(df['target_variable'], 'Target Variable')
-   print(f"Appears normal: {is_normal}")
-   print("Note: Detailed testing will be done in Statistical Analysis section")
+   print("=== Assumption Check ===")
+   # plots
    ```
 
 4. **Feature Relationships**
@@ -141,11 +138,214 @@ analysis_goals = {
 
 **Interpretation:** Show analytical thinking beyond just running code by explaining what patterns mean and their business implications.
 
-**Note on Normality Testing:** The quick normality check in EDA provides early insights to guide analysis decisions, while formal testing in the Statistical Analysis section ensures proper validation for reporting and model assumptions.
+---
+
+## IV. Data Manipulation and Feature Engineering
+
+### Creating New Variables and Data Transformation
+
+**Industry Alignment:** Data manipulation is crucial for extracting meaningful insights. Creating derived features often reveals patterns that raw data doesn't show, and filtering helps focus analysis on relevant subsets.
+
+**Key Components:**
+
+1. **Creating New Variables**
+   ```python
+   # Derived features from existing data
+   df['age_group'] = pd.cut(df['age'], 
+                           bins=[0, 25, 35, 50, 100], 
+                           labels=['Young', 'Young Adult', 'Adult', 'Senior'])
+   
+   # Date-based features
+   df['year'] = df['date'].dt.year
+   df['month'] = df['date'].dt.month
+   df['day_of_week'] = df['date'].dt.day_name()
+   
+   # Mathematical transformations
+   df['log_value'] = np.log(df['value'])
+   df['value_squared'] = df['value'] ** 2
+   df['value_per_capita'] = df['total_value'] / df['population']
+   
+   # Categorical encoding
+   df['is_premium'] = (df['subscription_type'] == 'Premium').astype(int)
+   df['region_encoded'] = pd.Categorical(df['region']).codes
+   ```
+
+2. **Data Filtering and Subsetting**
+   ```python
+   # Filter by conditions
+   recent_data = df[df['date'] >= '2023-01-01']
+   high_value_customers = df[df['total_spent'] > df['total_spent'].quantile(0.9)]
+   active_users = df[df['last_login'] >= pd.Timestamp.now() - pd.Timedelta(days=30)]
+   
+   # Multiple conditions
+   target_segment = df[
+       (df['age'] >= 25) & 
+       (df['age'] <= 45) & 
+       (df['income'] > 50000) & 
+       (df['location'] == 'Urban')
+   ]
+   
+   # Group-based filtering
+   top_performers = df.groupby('department').apply(
+       lambda x: x[x['performance_score'] >= x['performance_score'].quantile(0.8)]
+   ).reset_index(drop=True)
+   ```
+
+3. **Aggregation and Summary Statistics**
+   ```python
+   # Group-level aggregations
+   monthly_summary = df.groupby(['year', 'month']).agg({
+       'sales': ['sum', 'mean', 'count'],
+       'customers': 'nunique',
+       'revenue': ['sum', 'mean']
+   }).round(2)
+   
+   # Custom aggregations
+   def custom_aggregation(group):
+       return pd.Series({
+           'total_sales': group['sales'].sum(),
+           'avg_order_value': group['sales'].mean(),
+           'customer_count': group['customer_id'].nunique(),
+           'retention_rate': (group['customer_id'].value_counts() > 1).mean()
+       })
+   
+   customer_metrics = df.groupby('region').apply(custom_aggregation)
+   ```
+
+4. **Data Reshaping and Pivoting**
+   ```python
+   # Pivot tables for analysis
+   sales_pivot = df.pivot_table(
+       values='sales_amount',
+       index='region',
+       columns='product_category',
+       aggfunc='sum',
+       fill_value=0
+   )
+   
+   # Long to wide format
+   df_wide = df.pivot(index='customer_id', 
+                     columns='metric_type', 
+                     values='metric_value')
+   
+   # Wide to long format
+   df_long = df.melt(
+       id_vars=['customer_id', 'date'],
+       value_vars=['metric_1', 'metric_2', 'metric_3'],
+       var_name='metric_type',
+       value_name='metric_value'
+   )
+   ```
+
+### Exploratory Analysis on Transformed Data
+
+**Industry Alignment:** Analyzing transformed data often reveals insights that weren't apparent in the raw data. This step is crucial for feature selection and understanding relationships.
+
+**Transformation Analysis:**
+
+1. **Feature Distribution Analysis**
+   ```python
+   # Analyze transformed features
+   plt.figure(figsize=(15, 5))
+   
+   # Original vs transformed distributions
+   plt.subplot(1, 3, 1)
+   df['original_value'].hist(bins=30)
+   plt.title('Original Distribution')
+   
+   plt.subplot(1, 3, 2)
+   df['log_value'].hist(bins=30)
+   plt.title('Log-Transformed Distribution')
+   
+   plt.subplot(1, 3, 3)
+   df['value_per_capita'].hist(bins=30)
+   plt.title('Per-Capita Distribution')
+   
+   plt.tight_layout()
+   ```
+
+2. **Relationship Analysis with New Features**
+   ```python
+   # Correlation analysis with engineered features
+   engineered_features = ['log_value', 'value_per_capita', 'age_group_encoded', 'is_premium']
+   correlation_with_target = df[engineered_features + ['target']].corr()['target'].sort_values(ascending=False)
+   
+   # Visualize relationships
+   plt.figure(figsize=(12, 8))
+   sns.heatmap(df[engineered_features + ['target']].corr(), 
+               annot=True, cmap='coolwarm', center=0)
+   plt.title('Correlation Matrix: Engineered Features vs Target')
+   ```
+
+3. **Segment Analysis**
+   ```python
+   # Analyze performance by segments
+   segment_analysis = df.groupby('age_group').agg({
+       'target': ['mean', 'std', 'count'],
+       'feature1': 'mean',
+       'feature2': 'mean'
+   }).round(3)
+   
+   # Visualize segment differences
+   plt.figure(figsize=(10, 6))
+   df.boxplot(column='target', by='age_group')
+   plt.title('Target Variable by Age Group')
+   plt.suptitle('')  # Remove default title
+   ```
+
+4. **Time-based Patterns**
+   ```python
+   # Monthly trends
+   monthly_trends = df.groupby(['year', 'month'])['target'].mean().reset_index()
+   monthly_trends['date'] = pd.to_datetime(monthly_trends[['year', 'month']].assign(day=1))
+   
+   plt.figure(figsize=(12, 6))
+   plt.plot(monthly_trends['date'], monthly_trends['target'], marker='o')
+   plt.title('Monthly Trends in Target Variable')
+   plt.xlabel('Date')
+   plt.ylabel('Average Target Value')
+   plt.xticks(rotation=45)
+   ```
+
+**Quality Checks for Transformed Data:**
+```python
+# Validate transformations
+def validate_transformations(df):
+    """
+    Quality checks for data transformations
+    """
+    checks = {}
+    
+    # Check for infinite values
+    checks['infinite_values'] = df.select_dtypes(include=[np.number]).isin([np.inf, -np.inf]).sum()
+    
+    # Check for negative values where inappropriate
+    checks['negative_log_values'] = (df['log_value'] < 0).sum() if 'log_value' in df.columns else 0
+    
+    # Check for reasonable ranges
+    checks['unusual_per_capita'] = (df['value_per_capita'] > df['value_per_capita'].quantile(0.99)).sum()
+    
+    # Check for missing values in new features
+    checks['missing_new_features'] = df[['age_group', 'log_value', 'value_per_capita']].isnull().sum()
+    
+    return checks
+
+transformation_checks = validate_transformations(df)
+print("=== Transformation Quality Checks ===")
+for check, result in transformation_checks.items():
+    print(f"{check}: {result}")
+```
+
+**Best Practices:**
+- **Document all transformations:** Keep track of what was created and why
+- **Validate transformations:** Ensure new features make logical sense
+- **Consider business context:** Transformations should align with domain knowledge
+- **Test for multicollinearity:** New features may be highly correlated
+- **Monitor performance impact:** Some transformations may not improve model performance
 
 ---
 
-## IV. Model Selection
+## V. Model Selection
 
 ### Systematic Approach to Model Choice
 
@@ -185,7 +385,7 @@ analysis_goals = {
 
 ---
 
-## V. Model Diagnostics
+## VI. Model Diagnostics
 
 ### Assumption Validation and Quality Checks
 
@@ -292,7 +492,7 @@ While Q-Q plots can be misleading due to human bias in interpretation and the te
 
 ---
 
-## VI. Analysis and Interpretation
+## VII. Analysis and Interpretation
 
 ### Results Communication and Business Impact
 
@@ -333,7 +533,7 @@ While Q-Q plots can be misleading due to human bias in interpretation and the te
 
 ---
 
-## VII. Conclusion and Next Steps
+## VIII. Conclusion and Next Steps
 
 ### Professional Summary and Future Directions
 
@@ -378,19 +578,24 @@ While Q-Q plots can be misleading due to human bias in interpretation and the te
 - EDA is essential in practice. Clear visuals and summaries help identify data quality issues, inform modeling, and communicate to stakeholders
 - Interpretation shows analytical thinking beyond just running code
 
-**IV. Model Selection**
+**IV. Data Manipulation**
+- Creating derived features often reveals patterns that raw data doesn't show
+- Filtering and subsetting help focus analysis on relevant data segments
+- Feature engineering is crucial for model performance and interpretability
+
+**V. Model Selection**
 - Discussing selection techniques (like stepwise, AIC/BIC, regularization) is very common
 - Justifying model choice is critical in regulated fields (e.g., healthcare, finance)
 
-**V. Model Diagnostics**
+**VI. Model Diagnostics**
 - Checking assumptions is fundamental for interpretable models like linear regression
 - Identification of outliers and influential points is directly applicable in fraud detection, quality control, etc.
 
-**VI. Analysis and Interpretation**
+**VII. Analysis and Interpretation**
 - Reporting statistical metrics and tying them back to the business or research question is crucial
 - Many real-world failures happen because of misinterpreting the results—this section helps prevent that
 
-**VII. Conclusion**
+**VIII. Conclusion**
 - Summarizing without repeating the whole analysis shows communication skill
 - Including limitations and next steps demonstrates professionalism and scientific thinking
 

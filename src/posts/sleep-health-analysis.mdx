@@ -22,10 +22,11 @@ Dataset Source: https://www.kaggle.com/datasets/orvile/health-and-sleep-relation
 - [I Introduction and Goal Definition](#i-introduction-and-goal-definition)
 - [II Data Cleaning and Preparation](#ii-data-cleaning-and-preparation)
 - [III Exploratory Data Analysis (EDA)](#iii-exploratory-data-analysis-eda)
-- [IV Statistical Analysis and Modeling](#iv-statistical-analysis-and-modeling)
-- [V Analysis and Interpretation](#v-analysis-and-interpretation)
-- [VI Key Insights](#vi-key-insights)
-- [VII Limitations and Assumptions](#vii-limitations-and-assumptions)
+- [IV Data Manipulation and Feature Engineering](#iv-data-manipulation-and-feature-engineering)
+- [V Statistical Analysis and Modeling](#v-statistical-analysis-and-modeling)
+- [VI Analysis and Interpretation](#vi-analysis-and-interpretation)
+- [VII Key Insights](#vii-key-insights)
+- [VIII Limitations and Assumptions](#viii-limitations-and-assumptions)
 - [Recommendations and Next Steps](#recommendations-and-next-steps)
 - [Conclusion](#conclusion)
 
@@ -56,6 +57,224 @@ The analysis began with comprehensive data quality assessment:
 ---
 
 ### III. Exploratory Data Analysis (EDA)
+
+**Industry Alignment:** Data manipulation is crucial for extracting meaningful insights from health and lifestyle data. Creating derived features often reveals patterns that raw sleep metrics don't show, and filtering helps focus analysis on relevant demographic or lifestyle segments.
+
+**Key Components:**
+
+1. **Creating New Variables**
+   ```python
+   # Sleep quality categories
+   df['sleep_quality_category'] = pd.cut(df['Sleep_Quality'], 
+                                        bins=[0, 3, 5, 7, 10], 
+                                        labels=['Poor', 'Fair', 'Good', 'Excellent'])
+   
+   # Sleep duration categories
+   df['sleep_duration_category'] = pd.cut(df['Sleep_Duration'], 
+                                         bins=[0, 6, 7, 8, 12], 
+                                         labels=['Short', 'Below Average', 'Optimal', 'Long'])
+   
+   # Age groups
+   df['age_group'] = pd.cut(df['Age'], 
+                           bins=[0, 25, 35, 50, 100], 
+                           labels=['Young Adult', 'Adult', 'Middle-aged', 'Senior'])
+   
+   # Stress level categories
+   df['stress_level'] = pd.cut(df['Stress_Level'], 
+                              bins=[0, 3, 6, 8, 10], 
+                              labels=['Low', 'Moderate', 'High', 'Very High'])
+   
+   # Physical activity intensity
+   df['activity_intensity'] = pd.cut(df['Physical_Activity_Level'], 
+                                    bins=[0, 30, 60, 120, 300], 
+                                    labels=['Sedentary', 'Light', 'Moderate', 'Active'])
+   
+   # Sleep efficiency (quality per hour of sleep)
+   df['sleep_efficiency'] = df['Sleep_Quality'] / df['Sleep_Duration']
+   
+   # Lifestyle score (composite of activity and stress)
+   df['lifestyle_score'] = (df['Physical_Activity_Level'] / 10) - (df['Stress_Level'] / 10)
+   ```
+
+2. **Data Filtering and Subsetting**
+   ```python
+   # Good sleepers only
+   good_sleepers = df[df['sleep_quality_category'].isin(['Good', 'Excellent'])]
+   
+   # High stress individuals
+   high_stress = df[df['stress_level'].isin(['High', 'Very High'])]
+   
+   # Active lifestyle individuals
+   active_lifestyle = df[df['activity_intensity'].isin(['Moderate', 'Active'])]
+   
+   # Age-specific analysis
+   young_adults = df[df['age_group'] == 'Young Adult']
+   seniors = df[df['age_group'] == 'Senior']
+   
+   # Occupation-based filtering
+   office_workers = df[df['Occupation'] == 'Office Worker']
+   healthcare_workers = df[df['Occupation'] == 'Healthcare Worker']
+   ```
+
+3. **Aggregation and Summary Statistics**
+   ```python
+   # Sleep patterns by age group
+   age_sleep_analysis = df.groupby('age_group').agg({
+       'Sleep_Duration': ['mean', 'std'],
+       'Sleep_Quality': ['mean', 'std'],
+       'sleep_efficiency': 'mean',
+       'Stress_Level': 'mean'
+   }).round(2)
+   
+   # Occupation impact on sleep
+   occupation_sleep = df.groupby('Occupation').agg({
+       'Sleep_Duration': 'mean',
+       'Sleep_Quality': 'mean',
+       'Stress_Level': 'mean',
+       'Physical_Activity_Level': 'mean'
+   }).round(2)
+   
+   # Stress and activity relationship
+   stress_activity_analysis = df.groupby('stress_level').agg({
+       'Physical_Activity_Level': ['mean', 'std'],
+       'Sleep_Quality': 'mean',
+       'Sleep_Duration': 'mean'
+   })
+   ```
+
+4. **Data Reshaping for Analysis**
+   ```python
+   # Pivot table for demographic analysis
+   demographic_sleep = df.pivot_table(
+       values=['Sleep_Duration', 'Sleep_Quality', 'Stress_Level'],
+       index='Gender',
+       columns='age_group',
+       aggfunc='mean'
+   )
+   
+   # Lifestyle factors matrix
+   lifestyle_matrix = df.pivot_table(
+       values='Sleep_Quality',
+       index='activity_intensity',
+       columns='stress_level',
+       aggfunc='mean',
+       fill_value=0
+   )
+   ```
+
+### Exploratory Analysis on Transformed Data
+
+**Industry Alignment:** Analyzing transformed health data reveals insights about lifestyle factors, demographic patterns, and sleep optimization strategies that aren't apparent in raw sleep metrics.
+
+**Transformation Analysis:**
+
+1. **Sleep Efficiency Distribution**
+   ```python
+   # Analyze sleep efficiency patterns
+   plt.figure(figsize=(15, 5))
+   
+   plt.subplot(1, 3, 1)
+   df['sleep_efficiency'].hist(bins=30)
+   plt.title('Distribution of Sleep Efficiency')
+   plt.xlabel('Sleep Efficiency (Quality/Duration)')
+   
+   plt.subplot(1, 3, 2)
+   df.boxplot(column='sleep_efficiency', by='age_group')
+   plt.title('Sleep Efficiency by Age Group')
+   plt.suptitle('')
+   
+   plt.subplot(1, 3, 3)
+   df.boxplot(column='sleep_efficiency', by='stress_level')
+   plt.title('Sleep Efficiency by Stress Level')
+   plt.suptitle('')
+   
+   plt.tight_layout()
+   ```
+
+2. **Lifestyle Score Analysis**
+   ```python
+   # Lifestyle impact on sleep
+   lifestyle_sleep = df.groupby('activity_intensity')['Sleep_Quality'].mean()
+   
+   plt.figure(figsize=(12, 6))
+   lifestyle_sleep.plot(kind='bar')
+   plt.title('Average Sleep Quality by Activity Level')
+   plt.xlabel('Activity Intensity')
+   plt.ylabel('Average Sleep Quality')
+   plt.xticks(rotation=45)
+   ```
+
+3. **Demographic Sleep Patterns**
+   ```python
+   # Age and gender sleep patterns
+   demographic_patterns = df.groupby(['age_group', 'Gender']).agg({
+       'Sleep_Duration': 'mean',
+       'Sleep_Quality': 'mean',
+       'sleep_efficiency': 'mean'
+   }).round(2)
+   
+   # Visualize demographic patterns
+   plt.figure(figsize=(12, 8))
+   sns.heatmap(demographic_patterns['Sleep_Quality'].unstack(), 
+               annot=True, cmap='RdYlBu_r', center=5)
+   plt.title('Sleep Quality by Age Group and Gender')
+   ```
+
+4. **Stress-Activity Relationship**
+   ```python
+   # Stress and physical activity correlation
+   stress_activity_corr = df.groupby('stress_level')['Physical_Activity_Level'].mean()
+   
+   plt.figure(figsize=(10, 6))
+   stress_activity_corr.plot(kind='line', marker='o')
+   plt.title('Average Physical Activity by Stress Level')
+   plt.xlabel('Stress Level')
+   plt.ylabel('Average Physical Activity (minutes)')
+   plt.grid(True, alpha=0.3)
+   ```
+
+**Quality Checks for Transformed Data:**
+```python
+# Validate health data transformations
+def validate_health_transformations(df):
+    """
+    Quality checks for health and sleep data transformations
+    """
+    checks = {}
+    
+    # Check for infinite sleep efficiency
+    checks['infinite_efficiency'] = np.isinf(df['sleep_efficiency']).sum()
+    
+    # Check for negative lifestyle scores
+    checks['negative_lifestyle'] = (df['lifestyle_score'] < -1).sum()
+    
+    # Check for unreasonable sleep efficiency
+    checks['unusual_efficiency'] = (df['sleep_efficiency'] > df['sleep_efficiency'].quantile(0.99)).sum()
+    
+    # Check for missing categories
+    checks['missing_categories'] = df[['sleep_quality_category', 'age_group', 'stress_level']].isnull().sum().sum()
+    
+    # Check for logical inconsistencies
+    checks['inconsistent_sleep'] = ((df['Sleep_Quality'] > 7) & (df['Sleep_Duration'] < 4)).sum()
+    
+    return checks
+
+transformation_checks = validate_health_transformations(df)
+print("=== Health Data Transformation Quality Checks ===")
+for check, result in transformation_checks.items():
+    print(f"{check}: {result}")
+```
+
+**Best Practices:**
+- **Sleep efficiency calculation:** Handle edge cases where sleep duration is zero
+- **Category binning:** Use clinically relevant thresholds for sleep and health metrics
+- **Lifestyle scoring:** Ensure composite scores are interpretable and meaningful
+- **Data validation:** Check for logical inconsistencies in health metrics
+- **Clinical context:** Align transformations with medical and wellness industry standards
+
+---
+
+### IV. Data Manipulation and Feature Engineering
 
 ## Distribution Analysis
 
@@ -143,7 +362,7 @@ Lifestyle choices significantly influence sleep quality and duration. This analy
 
 ---
 
-### IV. Statistical Analysis and Modeling
+### V. Statistical Analysis and Modeling
 
 ## Statistical Tests
 
@@ -308,7 +527,7 @@ Sleep Quality = β₀ + β₁(Age) + β₂(Physical Activity) + β₃(Stress Lev
 
 ---
 
-### V. Analysis and Interpretation
+### VI. Analysis and Interpretation
 
 ## Key Statistical Findings
 
@@ -336,7 +555,7 @@ Sleep Quality = β₀ + β₁(Age) + β₂(Physical Activity) + β₃(Stress Lev
 
 ---
 
-### VI. Key Insights
+### VII. Key Insights
 
 ### Sleep Duration Patterns
 - Most people sleep between 6-8 hours per night
@@ -360,7 +579,7 @@ Sleep Quality = β₀ + β₁(Age) + β₂(Physical Activity) + β₃(Stress Lev
 
 ---
 
-### VII. Limitations and Assumptions
+### VIII. Limitations and Assumptions
 
 ### Data Quality Limitations
 - **Self-reported Data:** Reliance on participant-reported sleep metrics
