@@ -46,6 +46,7 @@ analysis_goals = {
    # Check for missing values
    missing_data = df.isnull().sum()
    missing_percentage = (missing_data / len(df)) * 100
+   # Options: Remove columns/rows with missing values or impute them
    ```
 
 2. **Data Type Validation**
@@ -62,6 +63,7 @@ analysis_goals = {
    Q3 = df['value'].quantile(0.75)
    IQR = Q3 - Q1
    outliers = df[(df['value'] < Q1 - 1.5*IQR) | (df['value'] > Q3 + 1.5*IQR)]
+   # Options: Keep if valid and significant for analysis, otherwise remove
    ```
 
 4. **Data Consistency Checks**
@@ -69,6 +71,7 @@ analysis_goals = {
    # Check for logical inconsistencies
    df['age'].describe()  # Should be reasonable range
    df['date'].min(), df['date'].max()  # Should be logical timeline
+   # if 'Male' and 'M' columns exist that both indicate the gender male, for example, rename/merge these
    ```
 
 ---
@@ -499,6 +502,8 @@ def check_separation(df, predictor, target):
 ### Exploratory Analysis on Transformed Data
 
 **Industry Alignment:** Analyzing transformed data often reveals insights that weren't apparent in the raw data. This step is crucial for feature selection and understanding relationships.
+
+**Note:** Transformations only done on continuous response variables/predictors only
 
 **Transformation Analysis:**
 

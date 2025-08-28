@@ -26,7 +26,7 @@ export default function RootLayout({
               <Link href="/" className="flex items-center space-x-2">
                 <span className="text-2xl">📊</span>
                 <span className="font-bold text-xl text-gray-900 dark:text-white">
-                  Leo's Data Blog
+                  Data Blog
                 </span>
               </Link>
 
