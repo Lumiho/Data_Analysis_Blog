@@ -10,6 +10,7 @@ interface Post {
   author?: string
   readingTime?: string
   tags?: string[]
+  draft?: boolean
 }
 
 interface PostsClientProps {

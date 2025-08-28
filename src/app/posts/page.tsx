@@ -11,6 +11,7 @@ interface Post {
   author?: string
   readingTime?: string
   tags?: string[]
+  draft?: boolean
 }
 
 async function getPosts(): Promise<Post[]> {
@@ -32,8 +33,10 @@ async function getPosts(): Promise<Post[]> {
         author: data.author,
         readingTime: data.readingTime,
         tags: data.tags,
+        draft: data.draft,
       }
     })
+    .filter(post => !post.draft) // Filter out draft posts
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   return posts
