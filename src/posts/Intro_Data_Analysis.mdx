@@ -75,68 +75,327 @@ analysis_goals = {
 
 ## III. Exploratory Data Analysis (EDA)
 
-### Comprehensive Data Exploration
+### Response Variable Analysis Framework
 
-**Industry Alignment:** EDA is essential in practice. Clear visuals and summaries help identify data quality issues, inform modeling, and communicate to stakeholders.
+**Industry Alignment:** EDA is essential in practice. The approach varies significantly based on whether your response variable is continuous or categorical. This structured approach ensures appropriate analysis techniques for each data type.
 
-**Key Components:**
+**Analysis Structure:**
 
-1. **Descriptive Statistics**
-   ```python
-   # Basic statistics
-   summary_stats = df.describe()
-   
-   # Distribution analysis
-   import matplotlib.pyplot as plt
-   import seaborn as sns
-   
-   plt.figure(figsize=(12, 4))
-   plt.subplot(1, 2, 1)
-   df['target_variable'].hist()
-   plt.title('Distribution of Target Variable')
-   
-   plt.subplot(1, 2, 2)
-   sns.boxplot(y=df['target_variable'])
-   plt.title('Box Plot - Outlier Detection')
-   ```
+#### 1. Continuous Response Variables
 
-2. **Correlation Analysis**
-   ```python
-   # Correlation matrix
-   correlation_matrix = df.corr()
-   sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
-   ```
+**Distribution Analysis:**
+```python
+# Histogram and density plots
+plt.figure(figsize=(15, 5))
 
-3. **Residual Plot Diagnostics**
-   ```python
-   # Confirm whether or not assumptions are met for Normality, Homoscedasticity (constant variance), Linearity
-   # Plot residual plots, normality will be tested with shapiro wilks instead.
+plt.subplot(1, 3, 1)
+df['target_variable'].hist(bins=30, alpha=0.7)
+plt.title('Histogram of Target Variable')
+plt.xlabel('Target Value')
+plt.ylabel('Frequency')
 
-   def normality_check(data, variable_name):
-       shapiro_stat, shapiro_p = stats.shapiro(data)
-       print(f"{variable_name}: W={shapiro_stat:.3f}, p={shapiro_p:.3f}")
-       return shapiro_p > 0.05
-       
-   def linear_check(data):
-      pass
-   def homoscedasticity_check(data):
-      pass
+plt.subplot(1, 3, 2)
+df['target_variable'].plot(kind='density')
+plt.title('Density Plot of Target Variable')
+plt.xlabel('Target Value')
+plt.ylabel('Density')
 
-   # Check key variables
-   print("=== Assumption Check ===")
-   # plots
-   ```
+plt.subplot(1, 3, 3)
+stats.probplot(df['target_variable'], dist="norm", plot=plt)
+plt.title('Q-Q Plot for Normality Check')
+plt.tight_layout()
+```
 
-4. **Feature Relationships**
-   ```python
-   # Scatter plots for key relationships
-   plt.scatter(df['feature1'], df['target'])
-   plt.xlabel('Feature 1')
-   plt.ylabel('Target Variable')
-   plt.title('Feature vs Target Relationship')
-   ```
+**Summary Statistics:**
+```python
+# Comprehensive descriptive statistics
+summary_stats = df['target_variable'].describe()
+print("=== Summary Statistics ===")
+print(summary_stats)
 
-**Interpretation:** Show analytical thinking beyond just running code by explaining what patterns mean and their business implications.
+# Additional statistics
+from scipy import stats
+skewness = stats.skew(df['target_variable'])
+kurtosis = stats.kurtosis(df['target_variable'])
+print(f"Skewness: {skewness:.3f}")
+print(f"Kurtosis: {kurtosis:.3f}")
+
+# Percentiles for detailed distribution
+percentiles = df['target_variable'].quantile([0.05, 0.25, 0.5, 0.75, 0.95])
+print("\n=== Percentiles ===")
+print(percentiles)
+```
+
+**Residual Plots (for regression models):**
+```python
+# Normality of residuals using Shapiro-Wilk test
+def check_residual_normality(y_true, y_pred, variable_name):
+    residuals = y_true - y_pred
+    shapiro_stat, shapiro_p = stats.shapiro(residuals)
+    print(f"{variable_name} Residuals - W={shapiro_stat:.3f}, p={shapiro_p:.3f}")
+    return shapiro_p > 0.05
+
+# Linearity check
+def check_linearity(y_true, y_pred):
+    plt.figure(figsize=(12, 4))
+    
+    plt.subplot(1, 2, 1)
+    plt.scatter(y_pred, y_true - y_pred)
+    plt.axhline(y=0, color='r', linestyle='--')
+    plt.xlabel('Predicted Values')
+    plt.ylabel('Residuals')
+    plt.title('Residuals vs Fitted Values')
+    
+    plt.subplot(1, 2, 2)
+    plt.scatter(y_pred, y_true)
+    plt.plot([y_pred.min(), y_pred.max()], [y_pred.min(), y_pred.max()], 'r--')
+    plt.xlabel('Predicted Values')
+    plt.ylabel('Actual Values')
+    plt.title('Actual vs Predicted Values')
+    plt.tight_layout()
+
+# Homoscedasticity check
+def check_homoscedasticity(y_true, y_pred):
+    residuals = y_true - y_pred
+    plt.scatter(y_pred, residuals)
+    plt.axhline(y=0, color='r', linestyle='--')
+    plt.xlabel('Predicted Values')
+    plt.ylabel('Residuals')
+    plt.title('Homoscedasticity Check')
+```
+
+**Relationship Analysis:**
+```python
+# Scatter plots with key predictors
+plt.figure(figsize=(15, 5))
+for i, feature in enumerate(['feature1', 'feature2', 'feature3']):
+    plt.subplot(1, 3, i+1)
+    plt.scatter(df[feature], df['target_variable'], alpha=0.6)
+    plt.xlabel(feature)
+    plt.ylabel('Target Variable')
+    plt.title(f'{feature} vs Target')
+plt.tight_layout()
+
+# Correlation analysis
+correlation_with_target = df.corr()['target_variable'].sort_values(ascending=False)
+print("=== Correlation with Target Variable ===")
+print(correlation_with_target)
+```
+
+#### 2. Categorical Response Variables
+
+**Distribution Analysis:**
+```python
+# Frequency tables and visualizations
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 3, 1)
+df['target_category'].value_counts().plot(kind='bar')
+plt.title('Frequency Distribution')
+plt.xlabel('Categories')
+plt.ylabel('Count')
+plt.xticks(rotation=45)
+
+plt.subplot(1, 3, 2)
+df['target_category'].value_counts().plot(kind='pie', autopct='%1.1f%%')
+plt.title('Proportion Distribution')
+plt.ylabel('')
+
+plt.subplot(1, 3, 3)
+sns.countplot(data=df, x='target_category')
+plt.title('Count Plot by Category')
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Class balance assessment
+class_counts = df['target_category'].value_counts()
+class_balance = class_counts.min() / class_counts.max()
+print(f"Class Balance Ratio: {class_balance:.3f}")
+print("Class Distribution:")
+print(class_counts)
+```
+
+**Summary Statistics:**
+```python
+# Mode and frequency analysis
+mode_value = df['target_category'].mode()[0]
+mode_count = df['target_category'].value_counts().max()
+total_count = len(df)
+
+print(f"Mode: {mode_value}")
+print(f"Mode Frequency: {mode_count}")
+print(f"Mode Proportion: {mode_count/total_count:.3f}")
+
+# Proportions and percentages
+proportions = df['target_category'].value_counts(normalize=True)
+print("\n=== Category Proportions ===")
+print(proportions)
+
+# Entropy calculation for information content
+from scipy.stats import entropy
+entropy_value = entropy(proportions)
+print(f"Entropy: {entropy_value:.3f}")
+```
+
+**Classification Analysis:**
+
+*For Continuous Predictors:*
+```python
+# Distribution by class
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 3, 1)
+df.boxplot(column='continuous_feature', by='target_category')
+plt.title('Box Plot by Category')
+plt.suptitle('')
+
+plt.subplot(1, 3, 2)
+for category in df['target_category'].unique():
+    subset = df[df['target_category'] == category]
+    plt.hist(subset['continuous_feature'], alpha=0.7, label=category, bins=20)
+plt.xlabel('Continuous Feature')
+plt.ylabel('Frequency')
+plt.title('Distribution by Category')
+plt.legend()
+
+plt.subplot(1, 3, 3)
+sns.violinplot(data=df, x='target_category', y='continuous_feature')
+plt.title('Violin Plot by Category')
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Linearity of logit (for logistic regression)
+def check_logit_linearity(df, continuous_feature, target_category):
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+    
+    # Create bins for continuous feature
+    df['feature_bins'] = pd.cut(df[continuous_feature], bins=10)
+    bin_means = df.groupby('feature_bins')[continuous_feature].mean()
+    bin_proportions = df.groupby('feature_bins')[target_category].mean()
+    
+    # Logit transformation
+    logits = np.log(bin_proportions / (1 - bin_proportions))
+    
+    plt.scatter(bin_means, logits)
+    plt.xlabel('Feature Mean')
+    plt.ylabel('Logit')
+    plt.title('Linearity of Logit Check')
+```
+
+*For Categorical Predictors:*
+```python
+# Contingency tables
+contingency_table = pd.crosstab(df['categorical_predictor'], df['target_category'])
+print("=== Contingency Table ===")
+print(contingency_table)
+
+# Chi-square test for independence
+from scipy.stats import chi2_contingency
+chi2_stat, chi2_p, dof, expected = chi2_contingency(contingency_table)
+print(f"\nChi-square Test:")
+print(f"Statistic: {chi2_stat:.3f}")
+print(f"P-value: {chi2_p:.3f}")
+print(f"Degrees of freedom: {dof}")
+print(f"Independent: {chi2_p > 0.05}")
+
+# Cramer's V for association strength
+def cramers_v(contingency_table):
+    chi2 = chi2_contingency(contingency_table)[0]
+    n = contingency_table.sum().sum()
+    min_dim = min(contingency_table.shape) - 1
+    return np.sqrt(chi2 / (n * min_dim))
+
+cramers_v_value = cramers_v(contingency_table)
+print(f"Cramer's V: {cramers_v_value:.3f}")
+
+# Mosaic plot
+plt.figure(figsize=(10, 6))
+mosaic_data = df.groupby(['categorical_predictor', 'target_category']).size().unstack(fill_value=0)
+mosaic_data.plot(kind='bar', stacked=True)
+plt.title('Mosaic Plot: Categorical Predictor vs Target')
+plt.xlabel('Categorical Predictor')
+plt.ylabel('Count')
+plt.legend(title='Target Category')
+plt.xticks(rotation=45)
+```
+
+**Model Performance Metrics (for classification models):**
+```python
+# Confusion matrix
+from sklearn.metrics import confusion_matrix, classification_report
+import seaborn as sns
+
+def plot_confusion_matrix(y_true, y_pred, classes):
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                xticklabels=classes, yticklabels=classes)
+    plt.title('Confusion Matrix')
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.show()
+
+# Classification report
+print("=== Classification Report ===")
+print(classification_report(y_true, y_pred))
+
+# ROC curves and AUC analysis
+from sklearn.metrics import roc_curve, auc
+from sklearn.preprocessing import label_binarize
+
+def plot_roc_curves(y_true, y_pred_proba, classes):
+    # Binarize the output for multi-class
+    y_true_bin = label_binarize(y_true, classes=classes)
+    
+    plt.figure(figsize=(10, 8))
+    for i, class_name in enumerate(classes):
+        fpr, tpr, _ = roc_curve(y_true_bin[:, i], y_pred_proba[:, i])
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, label=f'{class_name} (AUC = {roc_auc:.2f})')
+    
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curves')
+    plt.legend()
+    plt.show()
+```
+
+**Independence and Separation Checks:**
+```python
+# Check for independence of observations
+def check_independence(df, id_column, target_column):
+    """
+    Check for clustering or paired dependencies
+    """
+    # Check for repeated measures
+    repeated_measures = df.groupby(id_column)[target_column].count()
+    has_repeated = (repeated_measures > 1).any()
+    print(f"Repeated measures detected: {has_repeated}")
+    
+    if has_repeated:
+        print("Consider mixed-effects models or account for clustering")
+
+# Check for separation issues (logistic models)
+def check_separation(df, predictor, target):
+    """
+    Check if predictor perfectly predicts outcome
+    """
+    separation_check = df.groupby(predictor)[target].agg(['count', 'mean'])
+    perfect_predictors = separation_check[
+        (separation_check['mean'] == 0) | (separation_check['mean'] == 1)
+    ]
+    
+    if not perfect_predictors.empty:
+        print("Separation detected in predictors:")
+        print(perfect_predictors)
+        print("Consider regularization or removing problematic predictors")
+```
+
+**Interpretation:** This structured approach ensures appropriate analysis techniques for each response variable type. For continuous variables, focus on distribution characteristics and regression assumptions. For categorical variables, emphasize class balance, predictor relationships, and classification performance metrics.
 
 ---
 
