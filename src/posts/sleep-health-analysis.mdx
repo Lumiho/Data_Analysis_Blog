@@ -350,10 +350,10 @@ After selecting the model, we validated its assumptions:
 - **Independence:** No time-based autocorrelation present
 - **Multicollinearity:** Final VIF values all < 5
 
-## Linear Regression Modeling
+## Ordinal Logistic Regression Modeling
 
 ### Model Development
-A linear regression model was developed to predict sleep quality based on multiple factors:
+An ordinal logistic regression model was developed to predict sleep quality categories based on multiple factors. This approach is appropriate since sleep quality is an ordinal categorical variable (Poor, Fair, Good, Excellent).
 
 **Predictor Variables:**
 - Age
@@ -362,75 +362,72 @@ A linear regression model was developed to predict sleep quality based on multip
 - Heart Rate
 - Daily Steps
 
+**Response Variable:**
+- Sleep Quality Category (Poor, Fair, Good, Excellent)
+
 **Model Performance Metrics:**
-- Mean Squared Error (MSE)
-- R-squared (R²)
-- Model coefficients and their significance
+- Log-Likelihood
+- AIC (Akaike Information Criterion)
+- BIC (Bayesian Information Criterion)
+- Classification Accuracy
+- Odds Ratios and their significance
 
 ### Model Diagnostics
 
-**Residual Analysis:**
-The model diagnostics include comprehensive residual analysis to validate linear regression assumptions:
+**Ordinal Logistic Regression Diagnostics:**
+The model diagnostics include comprehensive assessment of the ordinal logistic regression model:
 
-#### 1. Linearity Assessment
-- **Residuals vs Fitted Plot:** Visual inspection shows random scatter around zero
-- **Lack-of-Fit Test:** F-statistic = 1.23, p-value = 0.187 (not significant)
-- **Interpretation:** No evidence of non-linear relationships
+#### 1. Model Fit Statistics
+- **Log-Likelihood:** -143.01
+- **AIC (Akaike Information Criterion):** 302.03
+- **BIC (Bayesian Information Criterion):** 331.63
+- **Interpretation:** Lower AIC and BIC values indicate better model fit
 
-#### 2. Normality of Residuals
-- **Shapiro-Wilk Test:** W = 0.984, p-value = 0.089
-- **Q-Q Plot:** Points follow the diagonal line closely
-- **Interpretation:** Residuals are approximately normally distributed (p > 0.05)
+#### 2. Classification Performance
+- **Classification Accuracy:** Model performance assessed through confusion matrix
+- **Confusion Matrix:** Shows actual vs predicted sleep quality categories
+- **Classification Report:** Provides precision, recall, and F1-score for each category
 
-#### 3. Homoscedasticity Check
-- **Breusch-Pagan Test:** LM-statistic = 2.45, p-value = 0.654
-- **White's Test:** F-statistic = 1.12, p-value = 0.342
-- **Interpretation:** No evidence of heteroscedasticity (constant variance assumption met)
-
-#### 4. Independence Check
-- **Durbin-Watson Test:** DW = 1.89
-- **Interpretation:** No significant autocorrelation (DW close to 2.0)
-
-#### 5. Multicollinearity Assessment
+#### 3. Multicollinearity Assessment
 **Variance Inflation Factors (VIF):**
-- Age: VIF = 1.23
-- Physical Activity Level: VIF = 1.45
-- Stress Level: VIF = 1.67
-- Heart Rate: VIF = 1.34
-- Daily Steps: VIF = 1.56
+- Age: VIF = 31.45
+- Physical Activity Level: VIF = 24.92
+- Stress Level: VIF = 20.31
+- Heart Rate: VIF = 75.17
+- Daily Steps: VIF = 49.66
 
-**Interpretation:** All VIF values < 5, indicating no problematic multicollinearity.
+**Interpretation:** High VIF values indicate potential multicollinearity issues that should be addressed in future model iterations.
 
-#### 6. Model Performance Metrics
-- **R-squared:** 0.634 (63.4% of variance explained)
-- **Adjusted R-squared:** 0.621
-- **F-statistic:** 45.67, p-value < 0.001
-- **Mean Squared Error (MSE):** 0.234
-- **Root Mean Squared Error (RMSE):** 0.484
-
-#### 7. Cross-Validation Results
-- **5-Fold CV R²:** 0.598 ± 0.042 (mean ± std)
-- **5-Fold CV MSE:** 0.251 ± 0.023
-- **Interpretation:** Model generalizes well with minimal overfitting
+#### 4. Model Performance Metrics
+- **Number of Observations:** 299
+- **Degrees of Freedom:** 291
+- **Model Convergence:** Successfully converged using L-BFGS optimization
+- **Significance Testing:** All predictor variables tested for statistical significance
 
 ![Figure 9: Model Diagnostics](/graphs/sleep_health_and_lifestyle/model_diagnostics.png)
 
-*Figure 9: Comprehensive diagnostic plots showing the model's residual analysis, including homoscedasticity assessment, normality testing, and overall model fit validation for the linear regression model.*
+*Figure 9: Comprehensive diagnostic plots for the ordinal logistic regression model, showing predicted probabilities distribution, actual vs predicted categories comparison, and odds ratios visualization for sleep quality prediction.*
 
-#### 8. Model Coefficients and Significance
+#### 5. Model Coefficients and Odds Ratios
 
-**Final Model Equation:**
-Sleep Quality = β₀ + β₁(Age) + β₂(Physical Activity) + β₃(Stress Level) + β₄(Heart Rate) + β₅(Daily Steps)
+**Ordinal Logistic Regression Results:**
+The model estimates the probability of being in higher sleep quality categories based on predictor variables.
 
-**Coefficient Estimates:**
-- **Intercept:** 6.234 (p < 0.001)
-- **Age:** -0.023 (p = 0.012)
-- **Physical Activity Level:** 0.156 (p < 0.001)
-- **Stress Level:** -0.189 (p < 0.001)
-- **Heart Rate:** -0.008 (p = 0.045)
-- **Daily Steps:** 0.0003 (p = 0.023)
+**Coefficient Estimates (Log-Odds):**
+- **Age:** 0.096 (p < 0.001) - Significant
+- **Physical Activity Level:** 0.031 (p = 0.047) - Significant
+- **Stress Level:** -3.520 (p < 0.001) - Highly significant
+- **Heart Rate:** 0.171 (p = 0.048) - Significant
+- **Daily Steps:** 0.0006 (p = 0.010) - Significant
 
-**Interpretation:** All predictors are statistically significant (p < 0.05) and have meaningful effects on sleep quality prediction.
+**Odds Ratios (for moving to higher sleep quality category):**
+- **Age:** 1.101 - Each year of age increases odds of better sleep quality by 10.1%
+- **Physical Activity Level:** 1.032 - Each unit increase increases odds by 3.2%
+- **Stress Level:** 0.030 - Each unit increase decreases odds by 97.0% (strong negative effect)
+- **Heart Rate:** 1.186 - Each bpm increase increases odds by 18.6%
+- **Daily Steps:** 1.001 - Each step increases odds by 0.1%
+
+**Interpretation:** All predictors are statistically significant (p < 0.05). Stress level has the strongest effect, with higher stress dramatically reducing the odds of better sleep quality.
 
 ---
 
@@ -449,9 +446,10 @@ Sleep Quality = β₀ + β₁(Age) + β₂(Physical Activity) + β₃(Stress Lev
 - **Clinical Relevance:** Practical implications of findings
 
 ### Model Insights
-- **Feature Importance:** Which factors most strongly predict sleep quality
-- **Coefficient Interpretation:** Direction and magnitude of relationships
-- **Predictive Power:** How well the model explains sleep quality variation
+- **Feature Importance:** Which factors most strongly predict sleep quality categories
+- **Odds Ratio Interpretation:** Direction and magnitude of effects on sleep quality improvement
+- **Classification Performance:** How well the model predicts sleep quality categories
+- **Statistical Significance:** Which predictors have meaningful effects on sleep quality
 
 ## Business Impact Translation
 
@@ -470,9 +468,11 @@ Sleep Quality = β₀ + β₁(Age) + β₂(Physical Activity) + β₃(Stress Lev
 - Age groups show different sleep patterns
 
 ### Quality Factors
-- Physical activity positively correlates with sleep quality
-- Stress levels negatively impact sleep duration
-- Higher daily step counts improve sleep quality
+- Physical activity increases odds of better sleep quality (OR = 1.032)
+- Stress levels dramatically decrease odds of better sleep quality (OR = 0.030)
+- Higher daily step counts slightly improve sleep quality (OR = 1.001)
+- Age is associated with better sleep quality (OR = 1.101)
+- Heart rate shows positive association with sleep quality (OR = 1.186)
 
 ### Demographic Trends
 - Gender differences exist in sleep patterns
@@ -494,9 +494,10 @@ Sleep Quality = β₀ + β₁(Age) + β₂(Physical Activity) + β₃(Stress Lev
 - **Sample Characteristics:** May not generalize to broader populations
 
 ### Model Assumptions
-- **Linear Relationships:** Assumed linear correlations between variables
+- **Proportional Odds:** Assumed proportional odds assumption for ordinal logistic regression
 - **Independence:** Assumed independent observations
-- **Normality:** Some statistical tests assume normal distributions
+- **Multicollinearity:** High VIF values indicate potential multicollinearity issues
+- **Categorical Response:** Appropriate for ordinal categorical sleep quality variable
 
 ### External Validity
 - **Population Generalizability:** Results may not apply to all demographics
@@ -520,8 +521,8 @@ Sleep Quality = β₀ + β₁(Age) + β₂(Physical Activity) + β₃(Stress Lev
 
 ## Conclusion
 
-This comprehensive analysis reveals important insights about sleep patterns and their relationship with lifestyle factors, following professional data analysis frameworks. The findings suggest that sleep quality is influenced by multiple factors including physical activity, stress levels, and demographic characteristics. Understanding these relationships can help individuals optimize their sleep habits and improve overall health outcomes.
+This comprehensive analysis reveals important insights about sleep patterns and their relationship with lifestyle factors, following professional data analysis frameworks. Using ordinal logistic regression, we found that sleep quality is significantly influenced by multiple factors, with stress levels having the strongest negative impact (OR = 0.030) and age showing positive association (OR = 1.101). Understanding these relationships can help individuals optimize their sleep habits and improve overall health outcomes.
 
-The statistical rigor applied ensures that conclusions are not only interesting but also reliable and actionable. The interactive visualizations allow for deeper exploration of the data, while the statistical analysis provides quantitative evidence of these relationships. This type of analysis demonstrates the power of systematic data science approaches in understanding complex health-related phenomena.
+The statistical rigor applied ensures that conclusions are not only interesting but also reliable and actionable. The ordinal logistic regression approach is particularly appropriate for categorical sleep quality outcomes, providing interpretable odds ratios that quantify the impact of each factor on sleep quality improvement. The interactive visualizations allow for deeper exploration of the data, while the statistical analysis provides quantitative evidence of these relationships.
 
-**Key Takeaway:** Sleep health is a complex, multi-factorial issue that requires personalized approaches based on individual characteristics, lifestyle factors, and demographic considerations. The professional framework applied here provides a solid foundation for evidence-based sleep improvement strategies. 
+**Key Takeaway:** Sleep health is a complex, multi-factorial issue that requires personalized approaches based on individual characteristics, lifestyle factors, and demographic considerations. The ordinal logistic regression model demonstrates that stress management is the most critical factor for sleep quality improvement, while physical activity, age, and heart rate also play significant roles. The professional framework applied here provides a solid foundation for evidence-based sleep improvement strategies. 

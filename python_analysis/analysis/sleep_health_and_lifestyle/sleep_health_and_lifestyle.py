@@ -539,72 +539,226 @@ print(f"\nRECOMMENDATION: Use non-parametric results since data is not normally 
 print(f"  - Spearman correlation: {spearman_corr:.4f} (p = {spearman_p:.4f})")
 print(f"  - Mann-Whitney U test: U = {u_stat:.4f} (p = {u_p_value:.4f})")
 
-# 2. Linear Regression Model
-print("\n2. Linear Regression Model:")
+# 2. Ordinal Logistic Regression Model
+print("\n2. Ordinal Logistic Regression Model:")
 
-# Prepare data for modeling
+# First, create the categorical sleep quality variable
+# Adjust bins to ensure we have sufficient observations in each category
+df_clean['sleep_quality_category'] = pd.cut(df_clean['Quality of Sleep'], 
+                                           bins=[0, 6, 7, 8, 10], 
+                                           labels=['Poor', 'Fair', 'Good', 'Excellent'])
+
+# Check the distribution of categories
+print("Sleep Quality Category Distribution:")
+category_dist = df_clean['sleep_quality_category'].value_counts().sort_index()
+print(category_dist)
+
+# Check if we have sufficient observations in each category
+min_observations = 10
+insufficient_categories = category_dist[category_dist < min_observations]
+if len(insufficient_categories) > 0:
+    print(f"\nWarning: Categories with < {min_observations} observations:")
+    print(insufficient_categories)
+    print("Consider adjusting the binning strategy.")
+
+# Prepare data for ordinal logistic regression
 X = df_clean[['Age', 'Physical Activity Level', 'Stress Level', 'Heart Rate', 'Daily Steps']]
-y = df_clean['Quality of Sleep']
+y_categorical = df_clean['sleep_quality_category']
 
 # Split data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
 
-# Fit model
-model = LinearRegression()
-model.fit(X_train, y_train)
+# Import ordinal logistic regression
+from statsmodels.miscmodels.ordinal_model import OrderedModel
 
-# Predictions
-y_pred = model.predict(X_test)
-
-# Model evaluation
-mse = mean_squared_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
-
-print(f"Model Performance:")
-print(f"  MSE: {mse:.4f}")
-print(f"  R²: {r2:.4f}")
-
-# Model coefficients
-coefficients = pd.DataFrame({
-    'Feature': X.columns,
-    'Coefficient': model.coef_
-})
-print(f"\nModel Coefficients:")
-print(coefficients)
+# Fit ordinal logistic regression model
+try:
+    # Remove any missing values
+    mask = ~(y_categorical.isna() | X.isna().any(axis=1))
+    X_clean = X[mask]
+    y_clean = y_categorical[mask]
+    
+    # Split data
+    X_train, X_test, y_train, y_test = train_test_split(X_clean, y_clean, test_size=0.2, random_state=42)
+    
+    # Create the ordinal model
+    ordinal_model = OrderedModel(y_train, X_train, distr='logit')
+    ordinal_results = ordinal_model.fit(method='lbfgs', disp=False, maxiter=1000)
+    
+    print(f"\nOrdinal Logistic Regression Results:")
+    print(f"  Log-Likelihood: {ordinal_results.llf:.4f}")
+    print(f"  AIC: {ordinal_results.aic:.4f}")
+    print(f"  BIC: {ordinal_results.bic:.4f}")
+    
+    # Model summary
+    print(f"\nModel Summary:")
+    print(ordinal_results.summary())
+    
+    # Odds ratios
+    odds_ratios = np.exp(ordinal_results.params)
+    print(f"\nOdds Ratios (for moving to higher sleep quality category):")
+    for feature, odds_ratio in zip(X.columns, odds_ratios):
+        print(f"  {feature}: {odds_ratio:.4f}")
+    
+    # Predictions
+    y_pred_proba = ordinal_results.predict(X_test)
+    y_pred_categories = ordinal_results.predict(X_test, which='prob').idxmax(axis=1)
+    
+    # Ensure predictions are in the same format as y_test
+    y_pred_categories = pd.Categorical(y_pred_categories, categories=['Poor', 'Fair', 'Good', 'Excellent'])
+    y_test_cat = pd.Categorical(y_test, categories=['Poor', 'Fair', 'Good', 'Excellent'])
+    
+    # Calculate accuracy
+    accuracy = (y_pred_categories == y_test_cat).mean()
+    print(f"\nModel Performance:")
+    print(f"  Accuracy: {accuracy:.4f}")
+    
+    # Store results for later use
+    ordinal_model_fitted = True
+    ordinal_coefficients = ordinal_results.params
+    
+except Exception as e:
+    print(f"Error fitting ordinal logistic regression: {e}")
+    print("Falling back to linear regression for comparison...")
+    
+    # Fallback to linear regression
+    y_numeric = df_clean['Quality of Sleep']
+    X_train, X_test, y_train, y_test = train_test_split(X, y_numeric, test_size=0.2, random_state=42)
+    
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    
+    print(f"Linear Regression Performance (for comparison):")
+    print(f"  MSE: {mse:.4f}")
+    print(f"  R²: {r2:.4f}")
+    
+    coefficients = pd.DataFrame({
+        'Feature': X.columns,
+        'Coefficient': model.coef_
+    })
+    print(f"\nLinear Regression Coefficients:")
+    print(coefficients)
+    
+    ordinal_model_fitted = False
 
 # 3. Model Diagnostics
 print("\n3. Model Diagnostics:")
 
-# Residuals analysis
-residuals = y_test - y_pred
+if ordinal_model_fitted:
+    # Ordinal Logistic Regression Diagnostics
+    print("Ordinal Logistic Regression Diagnostics:")
+    
+    # 1. Model fit statistics
+    print(f"  Log-Likelihood: {ordinal_results.llf:.4f}")
+    print(f"  AIC: {ordinal_results.aic:.4f}")
+    print(f"  BIC: {ordinal_results.bic:.4f}")
+    
+    # 2. Pseudo R-squared (McFadden's)
+    try:
+        # Create null model without predictors (intercept only)
+        null_model = OrderedModel(y_train, distr='logit')
+        null_results = null_model.fit(method='lbfgs', disp=False, maxiter=1000)
+        mcfadden_r2 = 1 - (ordinal_results.llf / null_results.llf)
+        print(f"  McFadden's Pseudo R²: {mcfadden_r2:.4f}")
+    except Exception as e:
+        print(f"  McFadden's Pseudo R²: Could not calculate ({e})")
+        mcfadden_r2 = None
+    
+    # 3. Classification accuracy
+    print(f"  Classification Accuracy: {accuracy:.4f}")
+    
+    # 4. Confusion Matrix
+    from sklearn.metrics import confusion_matrix, classification_report
+    cm = confusion_matrix(y_test_cat, y_pred_categories, labels=['Poor', 'Fair', 'Good', 'Excellent'])
+    print(f"\nConfusion Matrix:")
+    print("                 Predicted")
+    print("Actual    Poor  Fair  Good  Excellent")
+    categories = ['Poor', 'Fair', 'Good', 'Excellent']
+    for i, actual in enumerate(categories):
+        print(f"{actual:8} {cm[i][0]:4} {cm[i][1]:4} {cm[i][2]:4} {cm[i][3]:8}")
+    
+    # 5. Classification Report
+    print(f"\nClassification Report:")
+    print(classification_report(y_test_cat, y_pred_categories, labels=['Poor', 'Fair', 'Good', 'Excellent']))
+    
+    # 6. Visualize predicted probabilities
+    plt.figure(figsize=(15, 5))
+    
+    # Predicted probabilities for each category
+    plt.subplot(1, 3, 1)
+    prob_matrix = ordinal_results.predict(X_test)
+    for i, category in enumerate(['Poor', 'Fair', 'Good', 'Excellent']):
+        plt.hist(prob_matrix[:, i], alpha=0.6, label=category, bins=10)
+    plt.xlabel('Predicted Probability')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of Predicted Probabilities')
+    plt.legend()
+    
+    # Actual vs Predicted categories
+    plt.subplot(1, 3, 2)
+    category_counts = pd.Series(y_test_cat).value_counts()
+    predicted_counts = pd.Series(y_pred_categories).value_counts()
+    x = np.arange(len(categories))
+    width = 0.35
+    plt.bar(x - width/2, [category_counts.get(cat, 0) for cat in categories], width, label='Actual', alpha=0.7)
+    plt.bar(x + width/2, [predicted_counts.get(cat, 0) for cat in categories], width, label='Predicted', alpha=0.7)
+    plt.xlabel('Sleep Quality Category')
+    plt.ylabel('Count')
+    plt.title('Actual vs Predicted Categories')
+    plt.xticks(x, categories)
+    plt.legend()
+    
+    # Odds ratios visualization
+    plt.subplot(1, 3, 3)
+    odds_ratios = np.exp(ordinal_coefficients)
+    plt.barh(X.columns, odds_ratios)
+    plt.axvline(x=1, color='red', linestyle='--', alpha=0.7)
+    plt.xlabel('Odds Ratio')
+    plt.title('Odds Ratios for Sleep Quality Improvement')
+    plt.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}/model_diagnostics.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+else:
+    # Linear Regression Diagnostics (fallback)
+    print("Linear Regression Diagnostics (fallback):")
+    
+    # Residuals analysis
+    residuals = y_test - y_pred
+    
+    plt.figure(figsize=(15, 5))
+    
+    # Residuals vs Predicted
+    plt.subplot(1, 3, 1)
+    plt.scatter(y_pred, residuals, alpha=0.6)
+    plt.axhline(y=0, color='r', linestyle='--')
+    plt.xlabel('Predicted Values')
+    plt.ylabel('Residuals')
+    plt.title('Residuals vs Predicted')
+    
+    # QQ Plot of residuals
+    plt.subplot(1, 3, 2)
+    stats.probplot(residuals, dist="norm", plot=plt)
+    plt.title('QQ Plot of Residuals')
+    
+    # Residuals histogram
+    plt.subplot(1, 3, 3)
+    plt.hist(residuals, bins=20, alpha=0.7, edgecolor='black')
+    plt.xlabel('Residuals')
+    plt.ylabel('Frequency')
+    plt.title('Residuals Distribution')
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}/model_diagnostics.png', dpi=300, bbox_inches='tight')
+    plt.close()
 
-plt.figure(figsize=(15, 5))
-
-# Residuals vs Predicted
-plt.subplot(1, 3, 1)
-plt.scatter(y_pred, residuals, alpha=0.6)
-plt.axhline(y=0, color='r', linestyle='--')
-plt.xlabel('Predicted Values')
-plt.ylabel('Residuals')
-plt.title('Residuals vs Predicted')
-
-# QQ Plot of residuals
-plt.subplot(1, 3, 2)
-stats.probplot(residuals, dist="norm", plot=plt)
-plt.title('QQ Plot of Residuals')
-
-# Residuals histogram
-plt.subplot(1, 3, 3)
-plt.hist(residuals, bins=20, alpha=0.7, edgecolor='black')
-plt.xlabel('Residuals')
-plt.ylabel('Frequency')
-plt.title('Residuals Distribution')
-
-plt.tight_layout()
-plt.savefig(f'{output_dir}/model_diagnostics.png', dpi=300, bbox_inches='tight')
-plt.close()
-
-# Multicollinearity check
+# Multicollinearity check (applies to both models)
 def calculate_vif(X):
     vif_data = pd.DataFrame()
     vif_data["Variable"] = X.columns
@@ -652,18 +806,45 @@ print(f"Sleep duration-quality correlation strength: {strength} ({correlation:.3
 # 2. Business Impact Translation
 print("\n2. Business Impact Translation:")
 
-def business_impact(model_coefficient, feature_change, baseline_value):
-    """Convert statistical results to business metrics"""
-    predicted_change = model_coefficient * feature_change
-    percentage_change = (predicted_change / baseline_value) * 100
-    return f"Changing {feature_change} units results in {percentage_change:.1f}% change"
+if ordinal_model_fitted:
+    print("Ordinal Logistic Regression Interpretation:")
+    
+    # Interpret odds ratios
+    print(f"\nOdds Ratios Interpretation:")
+    print("(Odds ratio > 1: increases odds of higher sleep quality)")
+    print("(Odds ratio < 1: decreases odds of higher sleep quality)")
+    
+    for feature, odds_ratio in zip(X.columns, np.exp(ordinal_coefficients)):
+        if odds_ratio > 1:
+            interpretation = f"increases odds of better sleep quality by {((odds_ratio - 1) * 100):.1f}%"
+        else:
+            interpretation = f"decreases odds of better sleep quality by {((1 - odds_ratio) * 100):.1f}%"
+        print(f"  {feature}: OR = {odds_ratio:.4f} - {interpretation}")
+    
+    # Practical interpretation
+    print(f"\nPractical Interpretation:")
+    print("For a one-unit increase in each predictor:")
+    for feature, coef in zip(X.columns, ordinal_coefficients):
+        if coef > 0:
+            direction = "increases"
+        else:
+            direction = "decreases"
+        print(f"  {feature}: {direction} the log-odds of having better sleep quality by {abs(coef):.4f}")
+        
+else:
+    # Linear regression interpretation (fallback)
+    def business_impact(model_coefficient, feature_change, baseline_value):
+        """Convert statistical results to business metrics"""
+        predicted_change = model_coefficient * feature_change
+        percentage_change = (predicted_change / baseline_value) * 100
+        return f"Changing {feature_change} units results in {percentage_change:.1f}% change"
 
-baseline_quality = df_clean['Quality of Sleep'].mean()
-print(f"Baseline sleep quality: {baseline_quality:.2f}")
+    baseline_quality = df_clean['Quality of Sleep'].mean()
+    print(f"Baseline sleep quality: {baseline_quality:.2f}")
 
-for feature, coef in zip(X.columns, model.coef_):
-    impact = business_impact(coef, 1, baseline_quality)
-    print(f"  {feature}: {impact}")
+    for feature, coef in zip(X.columns, model.coef_):
+        impact = business_impact(coef, 1, baseline_quality)
+        print(f"  {feature}: {impact}")
 
 # 3. Statistical Significance Summary
 print("\n3. Statistical Significance Summary:")
