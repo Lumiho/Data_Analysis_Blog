@@ -182,15 +182,23 @@ Understanding the distribution of sleep duration across the population helps ide
 
 *Figure 1: Distribution of sleep duration across the population showing frequency distribution and identifying normal ranges and potential sleep issues.*
 
-### Normality Test (Shapiro-Wilk)
-
-Note: The Shapiro-Wilk test is a formal test for normality that's more reliable than visual assessments like Q-Q plots. While Q-Q plots can sometimes give the illusion of normality, the Shapiro-Wilk test provides a quantitative, objective measure of how well the data follows normal distribution. We will quickly explore this data's normality, in contrast to the QQ plot above.
+### Normality Test and Box-Cox Transformation Analysis
 
 **Shapiro-Wilk Test Results:**
-- **Test Statistic:** 0.987
-- **P-value:** 0.0023
+- **Test Statistic:** 0.936
+- **P-value:** < 0.001
 
 **Interpretation:** With a p-value < 0.05, we reject the null hypothesis that the data follows a normal distribution, indicating that non-parametric methods may be more appropriate for this analysis.
+
+**Box-Cox Transformation Assessment:**
+To determine if a transformation could improve the normality of the sleep duration data, we applied the Box-Cox transformation method:
+
+- **Optimal lambda value:** 0.483
+- **Original data normality:** Not normal (p < 0.001)
+- **Transformed data normality:** Still not normal (p < 0.001)
+- **Improvement:** No meaningful improvement in normality
+
+**Conclusion:** The Box-Cox transformation does not meaningfully improve the normality of the sleep duration data. Therefore, we proceed with the original data and use non-parametric statistical methods throughout the analysis.
 
 ## Correlation Analysis
 
@@ -258,115 +266,6 @@ Lifestyle choices significantly influence sleep quality and duration. This analy
 
 *Figure 8: Analysis of how physical activity, stress levels, daily steps, and heart rate correlate with sleep patterns, showing the impact of lifestyle choices on sleep quality and duration.*
 
-### Exploratory Analysis on Transformed Data
-
-**Industry Alignment:** Analyzing transformed health data reveals insights about lifestyle factors, demographic patterns, and sleep optimization strategies that aren't apparent in raw sleep metrics.
-
-**Transformation Analysis:**
-
-1. **Sleep Efficiency Distribution**
-   ```python
-   # Analyze sleep efficiency patterns
-   plt.figure(figsize=(15, 5))
-   
-   plt.subplot(1, 3, 1)
-   df['sleep_efficiency'].hist(bins=30)
-   plt.title('Distribution of Sleep Efficiency')
-   plt.xlabel('Sleep Efficiency (Quality/Duration)')
-   
-   plt.subplot(1, 3, 2)
-   df.boxplot(column='sleep_efficiency', by='age_group')
-   plt.title('Sleep Efficiency by Age Group')
-   plt.suptitle('')
-   
-   plt.subplot(1, 3, 3)
-   df.boxplot(column='sleep_efficiency', by='stress_level')
-   plt.title('Sleep Efficiency by Stress Level')
-   plt.suptitle('')
-   
-   plt.tight_layout()
-   ```
-
-2. **Lifestyle Score Analysis**
-   ```python
-   # Lifestyle impact on sleep
-   lifestyle_sleep = df.groupby('activity_intensity')['Sleep_Quality'].mean()
-   
-   plt.figure(figsize=(12, 6))
-   lifestyle_sleep.plot(kind='bar')
-   plt.title('Average Sleep Quality by Activity Level')
-   plt.xlabel('Activity Intensity')
-   plt.ylabel('Average Sleep Quality')
-   plt.xticks(rotation=45)
-   ```
-
-3. **Demographic Sleep Patterns**
-   ```python
-   # Age and gender sleep patterns
-   demographic_patterns = df.groupby(['age_group', 'Gender']).agg({
-       'Sleep_Duration': 'mean',
-       'Sleep_Quality': 'mean',
-       'sleep_efficiency': 'mean'
-   }).round(2)
-   
-   # Visualize demographic patterns
-   plt.figure(figsize=(12, 8))
-   sns.heatmap(demographic_patterns['Sleep_Quality'].unstack(), 
-               annot=True, cmap='RdYlBu_r', center=5)
-   plt.title('Sleep Quality by Age Group and Gender')
-   ```
-
-4. **Stress-Activity Relationship**
-   ```python
-   # Stress and physical activity correlation
-   stress_activity_corr = df.groupby('stress_level')['Physical_Activity_Level'].mean()
-   
-   plt.figure(figsize=(10, 6))
-   stress_activity_corr.plot(kind='line', marker='o')
-   plt.title('Average Physical Activity by Stress Level')
-   plt.xlabel('Stress Level')
-   plt.ylabel('Average Physical Activity (minutes)')
-   plt.grid(True, alpha=0.3)
-   ```
-
-**Quality Checks for Transformed Data:**
-```python
-# Validate health data transformations
-def validate_health_transformations(df):
-    """
-    Quality checks for health and sleep data transformations
-    """
-    checks = {}
-    
-    # Check for infinite sleep efficiency
-    checks['infinite_efficiency'] = np.isinf(df['sleep_efficiency']).sum()
-    
-    # Check for negative lifestyle scores
-    checks['negative_lifestyle'] = (df['lifestyle_score'] < -1).sum()
-    
-    # Check for unreasonable sleep efficiency
-    checks['unusual_efficiency'] = (df['sleep_efficiency'] > df['sleep_efficiency'].quantile(0.99)).sum()
-    
-    # Check for missing categories
-    checks['missing_categories'] = df[['sleep_quality_category', 'age_group', 'stress_level']].isnull().sum().sum()
-    
-    # Check for logical inconsistencies
-    checks['inconsistent_sleep'] = ((df['Sleep_Quality'] > 7) & (df['Sleep_Duration'] < 4)).sum()
-    
-    return checks
-
-transformation_checks = validate_health_transformations(df)
-print("=== Health Data Transformation Quality Checks ===")
-for check, result in transformation_checks.items():
-    print(f"{check}: {result}")
-```
-
-**Best Practices:**
-- **Sleep efficiency calculation:** Handle edge cases where sleep duration is zero
-- **Category binning:** Use clinically relevant thresholds for sleep and health metrics
-- **Lifestyle scoring:** Ensure composite scores are interpretable and meaningful
-- **Data validation:** Check for logical inconsistencies in health metrics
-- **Clinical context:** Align transformations with medical and wellness industry standards
 
 ---
 

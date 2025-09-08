@@ -172,10 +172,108 @@ plt.title('Sleep Duration Distribution')
 plt.xlabel('Sleep Duration (hours)')
 plt.ylabel('Frequency')
 
-# QQ Plot for Sleep Duration
+# Box-Cox Transformation Analysis
+from scipy.stats import boxcox
+from scipy.stats import jarque_bera
+
+print("\nBox-Cox Transformation Analysis:")
+print("-" * 40)
+
+# Check if data is positive (required for Box-Cox)
+sleep_duration = df_clean['Sleep Duration']
+if (sleep_duration > 0).all():
+    print("✓ All sleep duration values are positive - Box-Cox transformation is applicable")
+    
+    # Perform Box-Cox transformation
+    try:
+        transformed_data, lambda_optimal = boxcox(sleep_duration)
+        print(f"Optimal lambda value: {lambda_optimal:.4f}")
+        
+        # Test normality of transformed data
+        shapiro_transformed = stats.shapiro(transformed_data)
+        jarque_bera_transformed = jarque_bera(transformed_data)
+        
+        print(f"\nNormality tests for transformed data:")
+        print(f"  Shapiro-Wilk test:")
+        print(f"    Statistic: {shapiro_transformed.statistic:.4f}")
+        print(f"    P-value: {shapiro_transformed.pvalue:.4f}")
+        print(f"    Normal: {'Yes' if shapiro_transformed.pvalue > 0.05 else 'No'}")
+        
+        print(f"  Jarque-Bera test:")
+        print(f"    Statistic: {jarque_bera_transformed.statistic:.4f}")
+        print(f"    P-value: {jarque_bera_transformed.pvalue:.4f}")
+        print(f"    Normal: {'Yes' if jarque_bera_transformed.pvalue > 0.05 else 'No'}")
+        
+        # Determine if transformation is necessary
+        original_shapiro = stats.shapiro(sleep_duration)
+        improvement = shapiro_transformed.pvalue - original_shapiro.pvalue
+        
+        print(f"\nTransformation Assessment:")
+        print(f"  Original data p-value: {original_shapiro.pvalue:.4f}")
+        print(f"  Transformed data p-value: {shapiro_transformed.pvalue:.4f}")
+        print(f"  Improvement: {improvement:.4f}")
+        
+        if shapiro_transformed.pvalue > 0.05:
+            print("  ✓ RECOMMENDATION: Use transformed data - significantly improves normality")
+            transformation_needed = True
+        elif improvement > 0.01:  # Meaningful improvement threshold
+            print("  ⚠ RECOMMENDATION: Transformation provides some improvement but data still not normal")
+            transformation_needed = False  # Not enough improvement to justify
+        else:
+            print("  ✗ RECOMMENDATION: Transformation does not meaningfully improve normality")
+            transformation_needed = False
+            
+    except Exception as e:
+        print(f"Error in Box-Cox transformation: {e}")
+        transformation_needed = False
+else:
+    print("✗ Some sleep duration values are not positive - Box-Cox transformation not applicable")
+    transformation_needed = False
+
+# QQ Plot for Sleep Duration (original data)
 plt.subplot(2, 3, 2)
 stats.probplot(df_clean['Sleep Duration'], dist="norm", plot=plt)
-plt.title('QQ Plot - Sleep Duration')
+plt.title('QQ Plot - Sleep Duration (Original)')
+
+# Add transformed data analysis if transformation is beneficial
+if transformation_needed:
+    print("\nIncluding transformed data analysis...")
+    # Add transformed data to the dataset
+    df_clean['Sleep_Duration_Transformed'] = transformed_data
+    
+    # Create additional visualization for transformed data
+    plt.figure(figsize=(12, 5))
+    
+    # Original vs Transformed comparison
+    plt.subplot(1, 3, 1)
+    plt.hist(df_clean['Sleep Duration'], bins=15, alpha=0.7, color='skyblue', edgecolor='black', label='Original')
+    plt.title('Original Sleep Duration')
+    plt.xlabel('Sleep Duration (hours)')
+    plt.ylabel('Frequency')
+    
+    plt.subplot(1, 3, 2)
+    plt.hist(transformed_data, bins=15, alpha=0.7, color='lightgreen', edgecolor='black', label='Transformed')
+    plt.title(f'Transformed Sleep Duration (λ={lambda_optimal:.3f})')
+    plt.xlabel('Transformed Sleep Duration')
+    plt.ylabel('Frequency')
+    
+    plt.subplot(1, 3, 3)
+    stats.probplot(transformed_data, dist="norm", plot=plt)
+    plt.title('QQ Plot - Transformed Data')
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}/qq_sleep_duration.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print("✓ Transformed data analysis included")
+else:
+    print("\nSkipping transformed data analysis - transformation not beneficial")
+    # Remove the Q-Q plot file if it exists since we're not using transformed data
+    import os
+    qq_file = f'{output_dir}/qq_sleep_duration.png'
+    if os.path.exists(qq_file):
+        os.remove(qq_file)
+        print("✓ Removed unnecessary Q-Q plot file")
 
 # Sleep Quality Distribution
 plt.subplot(2, 3, 3)
