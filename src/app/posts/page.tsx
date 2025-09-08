@@ -18,14 +18,14 @@ async function getPosts(): Promise<Post[]> {
   const postsDirectory = path.join(process.cwd(), 'src', 'posts')
   const filenames = fs.readdirSync(postsDirectory)
 
-  const posts = filenames
+  const allPosts = filenames
     .filter(filename => filename.endsWith('.mdx'))
     .map(filename => {
       const filePath = path.join(postsDirectory, filename)
       const fileContent = fs.readFileSync(filePath, 'utf8')
       const { data } = matter(fileContent)
       
-      return {
+      const post = {
         slug: filename.replace('.mdx', ''),
         title: data.title,
         date: data.date,
@@ -35,9 +35,30 @@ async function getPosts(): Promise<Post[]> {
         tags: data.tags,
         draft: data.draft,
       }
+      
+      // Debug each post
+      console.log(`Processing ${filename}:`, { 
+        slug: post.slug, 
+        draft: post.draft, 
+        draftType: typeof post.draft,
+        title: post.title 
+      })
+      
+      return post
     })
-    .filter(post => !post.draft) // Filter out draft posts
+
+  // Debug logging
+  console.log('All posts:', allPosts.map(p => ({ slug: p.slug, draft: p.draft, title: p.title })))
+  
+  const posts = allPosts
+    .filter(post => {
+      const isDraft = post.draft === true;
+      console.log(`Filtering ${post.slug}: draft=${post.draft}, isDraft=${isDraft}`);
+      return !isDraft;
+    })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+  console.log('Filtered posts:', posts.map(p => ({ slug: p.slug, title: p.title })))
 
   return posts
 }

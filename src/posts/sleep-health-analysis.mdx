@@ -21,8 +21,8 @@ Dataset Source: https://www.kaggle.com/datasets/orvile/health-and-sleep-relation
 
 - [I Introduction and Goal Definition](#i-introduction-and-goal-definition)
 - [II Data Cleaning and Preparation](#ii-data-cleaning-and-preparation)
-- [III Exploratory Data Analysis (EDA)](#iii-exploratory-data-analysis-eda)
-- [IV Data Manipulation and Feature Engineering](#iv-data-manipulation-and-feature-engineering)
+- [III Data Manipulation and Feature Engineering](#iii-data-manipulation-and-feature-engineering)
+- [IV Exploratory Data Analysis (EDA)](#iv-exploratory-data-analysis-eda)
 - [V Statistical Analysis and Modeling](#v-statistical-analysis-and-modeling)
 - [VI Analysis and Interpretation](#vi-analysis-and-interpretation)
 - [VII Key Insights](#vii-key-insights)
@@ -56,7 +56,7 @@ The analysis began with comprehensive data quality assessment:
 
 ---
 
-### III. Exploratory Data Analysis (EDA)
+### III. Data Manipulation and Feature Engineering
 
 **Industry Alignment:** Data manipulation is crucial for extracting meaningful insights from health and lifestyle data. Creating derived features often reveals patterns that raw sleep metrics don't show, and filtering helps focus analysis on relevant demographic or lifestyle segments.
 
@@ -161,6 +161,96 @@ The analysis began with comprehensive data quality assessment:
        fill_value=0
    )
    ```
+
+ 
+
+---
+
+### IV. Exploratory Data Analysis (EDA)
+
+## Distribution Analysis
+
+### Sleep Duration Distribution
+
+Understanding the distribution of sleep duration across the population helps identify normal ranges and potential sleep issues. The histogram shows the frequency distribution, while the box plot reveals outliers and quartiles.
+
+![Figure 1: Sleep Duration Distribution](/graphs/sleep_health_and_lifestyle/sleep_duration_distribution.png)
+
+*Figure 1: Distribution of sleep duration across the population showing frequency distribution and identifying normal ranges and potential sleep issues.*
+
+### Normality Test (Shapiro-Wilk)
+
+Note: The Shapiro-Wilk test is a formal test for normality that's more reliable than visual assessments like Q-Q plots. While Q-Q plots can sometimes give the illusion of normality, the Shapiro-Wilk test provides a quantitative, objective measure of how well the data follows normal distribution. We will quickly explore this data's normality, in contrast to the QQ plot above.
+
+**Shapiro-Wilk Test Results:**
+- **Test Statistic:** 0.987
+- **P-value:** 0.0023
+
+**Interpretation:** With a p-value < 0.05, we reject the null hypothesis that the data follows a normal distribution, indicating that non-parametric methods may be more appropriate for this analysis.
+
+## Correlation Analysis
+
+### Sleep Duration vs Quality
+
+This scatter plot explores the relationship between sleep duration and sleep quality. Understanding this correlation is crucial for optimizing sleep patterns.
+
+![Figure 2: Sleep Duration vs Quality](/graphs/sleep_health_and_lifestyle/sleep_duration_vs_quality.png)
+
+*Figure 2: Scatter plot showing the relationship between sleep duration and sleep quality, crucial for understanding optimal sleep patterns.*
+
+### Correlation Matrix
+
+The correlation heatmap shows relationships between all numeric variables in the dataset. Red indicates positive correlations, blue indicates negative correlations, and white indicates no correlation.
+
+![Figure 3: Correlation Heatmap](/graphs/sleep_health_and_lifestyle/correlation_heatmap.png)
+
+*Figure 3: Correlation matrix heatmap showing relationships between all numeric variables, with red indicating positive correlations, blue indicating negative correlations, and white indicating no correlation.*
+
+## Interactive Analysis
+
+### Interactive Sleep Quality Analysis
+
+This interactive visualization allows you to explore the relationship between sleep duration and quality, with additional dimensions showing stress levels (color) and physical activity (size). Hover over points to see detailed information about occupation and age.
+
+**[Figure 4: Interactive Sleep Quality Analysis](/graphs/sleep_health_and_lifestyle/interactive_sleep_analysis.html)**
+
+*Figure 4: Interactive visualization allowing exploration of sleep duration vs quality relationships, with stress levels (color) and physical activity (size) as additional dimensions. Click to open in a new tab.*
+
+## Demographic Analysis
+
+### Sleep Patterns by Age Groups
+
+Age can significantly impact sleep patterns. This analysis shows how sleep duration, quality, physical activity, and stress levels vary across different age groups.
+
+![Figure 5: Sleep Patterns by Age](/graphs/sleep_health_and_lifestyle/sleep_patterns_by_age.png)
+
+*Figure 5: Analysis of sleep duration, quality, physical activity, and stress levels across different age groups, showing how age impacts sleep patterns.*
+
+### Sleep Patterns by Gender
+
+Gender differences in sleep patterns are well-documented. This analysis compares sleep duration, quality, stress levels, and physical activity between males and females.
+
+![Figure 6: Sleep Patterns by Gender](/graphs/sleep_health_and_lifestyle/sleep_patterns_by_gender.png)
+
+*Figure 6: Comparison of sleep duration, quality, stress levels, and physical activity between males and females, showing documented gender differences in sleep patterns.*
+
+### Sleep Duration by Occupation
+
+Different occupations may have varying demands and schedules that affect sleep patterns. This analysis shows average sleep duration across different professional categories.
+
+![Figure 7: Sleep by Occupation](/graphs/sleep_health_and_lifestyle/sleep_by_occupation.png)
+
+*Figure 7: Average sleep duration across different professional categories, showing how occupational demands and schedules affect sleep patterns.*
+
+## Lifestyle Factors Impact
+
+### Impact of Lifestyle Factors on Sleep
+
+Lifestyle choices significantly influence sleep quality and duration. This analysis explores how physical activity, stress levels, daily steps, and heart rate correlate with sleep patterns.
+
+![Figure 8: Lifestyle Factors Impact](/graphs/sleep_health_and_lifestyle/lifestyle_factors_impact.png)
+
+*Figure 8: Analysis of how physical activity, stress levels, daily steps, and heart rate correlate with sleep patterns, showing the impact of lifestyle choices on sleep quality and duration.*
 
 ### Exploratory Analysis on Transformed Data
 
@@ -271,94 +361,6 @@ for check, result in transformation_checks.items():
 - **Lifestyle scoring:** Ensure composite scores are interpretable and meaningful
 - **Data validation:** Check for logical inconsistencies in health metrics
 - **Clinical context:** Align transformations with medical and wellness industry standards
-
----
-
-### IV. Data Manipulation and Feature Engineering
-
-## Distribution Analysis
-
-### Sleep Duration Distribution
-
-Understanding the distribution of sleep duration across the population helps identify normal ranges and potential sleep issues. The histogram shows the frequency distribution, while the box plot reveals outliers and quartiles.
-
-![Figure 1: Sleep Duration Distribution](/graphs/sleep_health_and_lifestyle/sleep_duration_distribution.png)
-
-*Figure 1: Distribution of sleep duration across the population showing frequency distribution and identifying normal ranges and potential sleep issues.*
-
-### Normality Test (Shapiro-Wilk)
-
-Note: The Shapiro-Wilk test is a formal test for normality that's more reliable than visual assessments like Q-Q plots. While Q-Q plots can sometimes give the illusion of normality, the Shapiro-Wilk test provides a quantitative, objective measure of how well the data follows normal distribution. We will quickly explore this data's normality, in contrast to the QQ plot above.
-
-**Shapiro-Wilk Test Results:**
-- **Test Statistic:** 0.987
-- **P-value:** 0.0023
-
-**Interpretation:** With a p-value < 0.05, we reject the null hypothesis that the data follows a normal distribution, indicating that non-parametric methods may be more appropriate for this analysis.
-
-## Correlation Analysis
-
-### Sleep Duration vs Quality
-
-This scatter plot explores the relationship between sleep duration and sleep quality. Understanding this correlation is crucial for optimizing sleep patterns.
-
-![Figure 2: Sleep Duration vs Quality](/graphs/sleep_health_and_lifestyle/sleep_duration_vs_quality.png)
-
-*Figure 2: Scatter plot showing the relationship between sleep duration and sleep quality, crucial for understanding optimal sleep patterns.*
-
-### Correlation Matrix
-
-The correlation heatmap shows relationships between all numeric variables in the dataset. Red indicates positive correlations, blue indicates negative correlations, and white indicates no correlation.
-
-![Figure 3: Correlation Heatmap](/graphs/sleep_health_and_lifestyle/correlation_heatmap.png)
-
-*Figure 3: Correlation matrix heatmap showing relationships between all numeric variables, with red indicating positive correlations, blue indicating negative correlations, and white indicating no correlation.*
-
-## Interactive Analysis
-
-### Interactive Sleep Quality Analysis
-
-This interactive visualization allows you to explore the relationship between sleep duration and quality, with additional dimensions showing stress levels (color) and physical activity (size). Hover over points to see detailed information about occupation and age.
-
-**[Figure 4: Interactive Sleep Quality Analysis](/graphs/sleep_health_and_lifestyle/interactive_sleep_analysis.html)**
-
-*Figure 4: Interactive visualization allowing exploration of sleep duration vs quality relationships, with stress levels (color) and physical activity (size) as additional dimensions. Click to open in a new tab.*
-
-## Demographic Analysis
-
-### Sleep Patterns by Age Groups
-
-Age can significantly impact sleep patterns. This analysis shows how sleep duration, quality, physical activity, and stress levels vary across different age groups.
-
-![Figure 5: Sleep Patterns by Age](/graphs/sleep_health_and_lifestyle/sleep_patterns_by_age.png)
-
-*Figure 5: Analysis of sleep duration, quality, physical activity, and stress levels across different age groups, showing how age impacts sleep patterns.*
-
-### Sleep Patterns by Gender
-
-Gender differences in sleep patterns are well-documented. This analysis compares sleep duration, quality, stress levels, and physical activity between males and females.
-
-![Figure 6: Sleep Patterns by Gender](/graphs/sleep_health_and_lifestyle/sleep_patterns_by_gender.png)
-
-*Figure 6: Comparison of sleep duration, quality, stress levels, and physical activity between males and females, showing documented gender differences in sleep patterns.*
-
-### Sleep Duration by Occupation
-
-Different occupations may have varying demands and schedules that affect sleep patterns. This analysis shows average sleep duration across different professional categories.
-
-![Figure 7: Sleep by Occupation](/graphs/sleep_health_and_lifestyle/sleep_by_occupation.png)
-
-*Figure 7: Average sleep duration across different professional categories, showing how occupational demands and schedules affect sleep patterns.*
-
-## Lifestyle Factors Impact
-
-### Impact of Lifestyle Factors on Sleep
-
-Lifestyle choices significantly influence sleep quality and duration. This analysis explores how physical activity, stress levels, daily steps, and heart rate correlate with sleep patterns.
-
-![Figure 8: Lifestyle Factors Impact](/graphs/sleep_health_and_lifestyle/lifestyle_factors_impact.png)
-
-*Figure 8: Analysis of how physical activity, stress levels, daily steps, and heart rate correlate with sleep patterns, showing the impact of lifestyle choices on sleep quality and duration.*
 
 ---
 
