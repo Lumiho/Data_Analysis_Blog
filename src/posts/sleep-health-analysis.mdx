@@ -23,10 +23,11 @@ Dataset Source: https://www.kaggle.com/datasets/orvile/health-and-sleep-relation
 - [II Data Cleaning and Preparation](#ii-data-cleaning-and-preparation)
 - [III Data Manipulation and Feature Engineering](#iii-data-manipulation-and-feature-engineering)
 - [IV Exploratory Data Analysis (EDA)](#iv-exploratory-data-analysis-eda)
-- [V Statistical Analysis and Modeling](#v-statistical-analysis-and-modeling)
-- [VI Analysis and Interpretation](#vi-analysis-and-interpretation)
-- [VII Key Insights](#vii-key-insights)
-- [VIII Limitations and Assumptions](#viii-limitations-and-assumptions)
+- [V Statistical Method Selection](#v-statistical-method-selection)
+- [VI Statistical Analysis and Modeling](#vi-statistical-analysis-and-modeling)
+- [VII Analysis and Interpretation](#vii-analysis-and-interpretation)
+- [VIII Key Insights](#viii-key-insights)
+- [IX Limitations and Assumptions](#ix-limitations-and-assumptions)
 - [Recommendations and Next Steps](#recommendations-and-next-steps)
 - [Conclusion](#conclusion)
 
@@ -43,7 +44,7 @@ Dataset Source: https://www.kaggle.com/datasets/orvile/health-and-sleep-relation
 
 **Success Metrics:** Statistical significance, interpretability, and actionability of findings.
 
-**Response Variable(s)**: Sleep Quality, Sleep Duration (both categorical) 
+**Response Variable(s)**: Sleep Quality (ordinal categorical: Poor, Fair, Good, Excellent), Sleep Duration (continuous) 
 
 ---
 
@@ -200,6 +201,26 @@ To determine if a transformation could improve the normality of the sleep durati
 
 **Conclusion:** The Box-Cox transformation does not meaningfully improve the normality of the sleep duration data. Therefore, we proceed with the original data and use non-parametric statistical methods throughout the analysis.
 
+## Statistical Method Selection
+
+### Response Variable Analysis
+Before selecting appropriate statistical methods, we must understand the nature of our response variables:
+
+**Sleep Quality Variable:**
+- **Original Scale:** 1-10 continuous scale
+- **Categorical Transformation:** Converted to ordinal categories (Poor: 1-3, Fair: 4-5, Good: 6-7, Excellent: 8-10)
+- **Statistical Method Decision:** Ordinal logistic regression is appropriate for ordinal categorical outcomes
+
+**Sleep Duration Variable:**
+- **Scale:** Continuous (hours)
+- **Distribution:** Non-normal (Shapiro-Wilk p < 0.001)
+- **Statistical Method Decision:** Non-parametric methods preferred
+
+**Rationale for Method Selection:**
+1. **Ordinal Logistic Regression for Sleep Quality:** Appropriate for ordinal categorical response variables where categories have meaningful order
+2. **Non-parametric Tests for Sleep Duration:** Required due to non-normal distribution
+3. **Proportional Odds Assumption:** Ordinal logistic regression assumes that the effect of predictors is consistent across all category thresholds
+
 ## Correlation Analysis
 
 ### Sleep Duration vs Quality
@@ -269,7 +290,9 @@ Lifestyle choices significantly influence sleep quality and duration. This analy
 
 ---
 
-### V. Statistical Analysis and Modeling
+### V. Statistical Method Selection
+
+### VI. Statistical Analysis and Modeling
 
 ## Statistical Tests
 
@@ -431,7 +454,7 @@ The model estimates the probability of being in higher sleep quality categories 
 
 ---
 
-### VI. Analysis and Interpretation
+### VII. Analysis and Interpretation
 
 ## Key Statistical Findings
 
@@ -460,7 +483,7 @@ The model estimates the probability of being in higher sleep quality categories 
 
 ---
 
-### VII. Key Insights
+### VIII. Key Insights
 
 ### Sleep Duration Patterns
 - Most people sleep between 6-8 hours per night
@@ -486,7 +509,7 @@ The model estimates the probability of being in higher sleep quality categories 
 
 ---
 
-### VIII. Limitations and Assumptions
+### IX. Limitations and Assumptions
 
 ### Data Quality Limitations
 - **Self-reported Data:** Reliance on participant-reported sleep metrics

@@ -472,10 +472,35 @@ fig.update_layout(
 fig.write_html(f'{output_dir}/interactive_sleep_analysis.html')
 
 # ============================================================================
-# V. STATISTICAL ANALYSIS AND MODELING
+# V. STATISTICAL METHOD SELECTION
 # ============================================================================
 
-print("\nV. STATISTICAL ANALYSIS AND MODELING")
+print("\nV. STATISTICAL METHOD SELECTION")
+print("-" * 50)
+
+print("\nResponse Variable Analysis:")
+print("Before selecting appropriate statistical methods, we must understand the nature of our response variables:")
+
+print("\nSleep Quality Variable:")
+print("- Original Scale: 1-10 continuous scale")
+print("- Categorical Transformation: Converted to ordinal categories (Poor: 1-3, Fair: 4-5, Good: 6-7, Excellent: 8-10)")
+print("- Statistical Method Decision: Ordinal logistic regression is appropriate for ordinal categorical outcomes")
+
+print("\nSleep Duration Variable:")
+print("- Scale: Continuous (hours)")
+print("- Distribution: Non-normal (Shapiro-Wilk p < 0.001)")
+print("- Statistical Method Decision: Non-parametric methods preferred")
+
+print("\nRationale for Method Selection:")
+print("1. Ordinal Logistic Regression for Sleep Quality: Appropriate for ordinal categorical response variables where categories have meaningful order")
+print("2. Non-parametric Tests for Sleep Duration: Required due to non-normal distribution")
+print("3. Proportional Odds Assumption: Ordinal logistic regression assumes that the effect of predictors is consistent across all category thresholds")
+
+# ============================================================================
+# VI. STATISTICAL ANALYSIS AND MODELING
+# ============================================================================
+
+print("\nVI. STATISTICAL ANALYSIS AND MODELING")
 print("-" * 50)
 
 # 1. Statistical Tests
@@ -770,10 +795,10 @@ print(f"\nVariance Inflation Factors:")
 print(vif_results)
 
 # ============================================================================
-# VI. ANALYSIS AND INTERPRETATION
+# VII. ANALYSIS AND INTERPRETATION
 # ============================================================================
 
-print("\nVI. ANALYSIS AND INTERPRETATION")
+print("\nVII. ANALYSIS AND INTERPRETATION")
 print("-" * 50)
 
 # 1. Key Findings Summary
@@ -866,10 +891,10 @@ print(f"  • Results from parametric tests may be less reliable")
 print(f"  • Spearman correlation measures monotonic relationships, not just linear")
 
 # ============================================================================
-# VII. CONCLUSION AND NEXT STEPS
+# VIII. CONCLUSION AND NEXT STEPS
 # ============================================================================
 
-print("\nVII. CONCLUSION AND NEXT STEPS")
+print("\nVIII. CONCLUSION AND NEXT STEPS")
 print("-" * 50)
 
 # 1. Key Insights
