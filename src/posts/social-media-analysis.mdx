@@ -124,8 +124,6 @@ The analysis began with comprehensive data quality assessment of a dataset conta
 - Posting frequency is relatively consistent across users (mean ~10 posts/day)
 - Engagement rates vary significantly by platform, suggesting platform-specific user behavior patterns
 
----
-
 #### Key Figures (Small)
 
 - Distributions (all metrics):
@@ -138,6 +136,9 @@ The analysis began with comprehensive data quality assessment of a dataset conta
   ![](/graphs/social_media_usage/corr_heatmap.png)
 
 All figures are saved at reduced resolution for quick loading.
+
+---
+
 
 ### IV. Data Manipulation and Feature Engineering
 
@@ -223,92 +224,6 @@ All figures are saved at reduced resolution for quick loading.
        fill_value=0
    )
    ```
-
-### Exploratory Analysis on Transformed Data
-
-**Industry Alignment:** Analyzing transformed social media data reveals insights about user behavior patterns, platform effectiveness, and engagement strategies that aren't apparent in raw metrics.
-
-**Transformation Analysis:**
-
-1. **Engagement Rate Distribution**
-   ```python
-   # Analyze engagement rate patterns
-   plt.figure(figsize=(12, 4))
-   
-   plt.subplot(1, 2, 1)
-   df['engagement_rate'].hist(bins=30)
-   plt.title('Distribution of Engagement Rate')
-   plt.xlabel('Engagement Rate')
-   
-   plt.subplot(1, 2, 2)
-   df.boxplot(column='engagement_rate', by='platform_type')
-   plt.title('Engagement Rate by Platform Type')
-   plt.suptitle('')
-   ```
-
-2. **Usage Intensity Analysis**
-   ```python
-   # Usage patterns by intensity level
-   intensity_engagement = df.groupby('usage_intensity')['engagement_rate'].mean()
-   
-   plt.figure(figsize=(10, 6))
-   intensity_engagement.plot(kind='bar')
-   plt.title('Average Engagement Rate by Usage Intensity')
-   plt.xlabel('Usage Intensity')
-   plt.ylabel('Average Engagement Rate')
-   plt.xticks(rotation=45)
-   ```
-
-3. **Platform Performance Comparison**
-   ```python
-   # Platform effectiveness analysis
-   platform_effectiveness = df.groupby('App').agg({
-       'engagement_rate': 'mean',
-       'likes_per_minute': 'mean',
-       'posts_per_hour': 'mean'
-   }).round(3)
-   
-   # Visualize platform performance
-   plt.figure(figsize=(12, 8))
-   sns.heatmap(platform_effectiveness, annot=True, cmap='YlOrRd')
-   plt.title('Platform Performance Heatmap')
-   ```
-
-**Quality Checks for Transformed Data:**
-```python
-# Validate social media transformations
-def validate_social_media_transformations(df):
-    """
-    Quality checks for social media data transformations
-    """
-    checks = {}
-    
-    # Check for infinite engagement rates
-    checks['infinite_engagement'] = np.isinf(df['engagement_rate']).sum()
-    
-    # Check for negative values
-    checks['negative_metrics'] = (df[['likes_per_minute', 'posts_per_hour']] < 0).sum().sum()
-    
-    # Check for unreasonable engagement rates
-    checks['unusual_engagement'] = (df['engagement_rate'] > df['engagement_rate'].quantile(0.99)).sum()
-    
-    # Check for missing platform classifications
-    checks['missing_platform_type'] = df['platform_type'].isnull().sum()
-    
-    return checks
-
-transformation_checks = validate_social_media_transformations(df)
-print("=== Social Media Transformation Quality Checks ===")
-for check, result in transformation_checks.items():
-    print(f"{check}: {result}")
-```
-
-**Best Practices:**
-- **Engagement rate calculation:** Handle zero posts appropriately to avoid division by zero
-- **Platform categorization:** Use consistent classification schemes
-- **Usage intensity bins:** Align with industry standards for social media usage
-- **Data validation:** Check for logical inconsistencies in derived metrics
-- **Business context:** Ensure transformations align with social media marketing objectives
 
 ---
 
