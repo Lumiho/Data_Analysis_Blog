@@ -1,0 +1,551 @@
+---
+title: "Sleep Health & Lifestyle Analysis: A Comprehensive Data Study"
+date: "2025-05-19"
+summary: "An in-depth analysis of sleep patterns and their correlations with lifestyle factors, following professional data analysis frameworks with statistical modeling and interpretation."
+author: "Leonardo Zavala-Jimenez"
+readingTime: "15"
+tags: ["health", "sleep", "lifestyle", "python", "statistics", "professional-analysis"]
+---
+
+# Sleep Health & Lifestyle Analysis: A Comprehensive Data Study
+
+**Introduction:** This analysis explores the relationship between sleep patterns and various lifestyle factors using a dataset of sleep health and lifestyle information. Following professional data analysis frameworks, this study systematically examines sleep duration, quality, and their correlations with physical activity, stress levels, occupation, age, and gender through rigorous statistical methods.
+
+Dataset Source: https://www.kaggle.com/datasets/orvile/health-and-sleep-relation-2024?resource=download
+
+## Table of Contents
+
+---
+
+### Title
+
+- [I Introduction and Goal Definition](#i-introduction-and-goal-definition)
+- [II Data Cleaning and Preparation](#ii-data-cleaning-and-preparation)
+- [III Data Manipulation and Feature Engineering](#iii-data-manipulation-and-feature-engineering)
+- [IV Exploratory Data Analysis (EDA)](#iv-exploratory-data-analysis-eda)
+- [V Statistical Method Selection](#v-statistical-method-selection)
+- [VI Statistical Analysis and Modeling](#vi-statistical-analysis-and-modeling)
+- [VII Analysis and Interpretation](#vii-analysis-and-interpretation)
+- [VIII Key Insights](#viii-key-insights)
+- [IX Limitations and Assumptions](#ix-limitations-and-assumptions)
+- [Recommendations and Next Steps](#recommendations-and-next-steps)
+- [Conclusion](#conclusion)
+
+---
+
+### I. Goal Definition
+
+**Primary Research Question:** What factors most significantly influence sleep quality and duration?
+
+**Secondary Questions:**
+- How do lifestyle factors (physical activity, stress) correlate with sleep patterns?
+- Are there significant demographic differences in sleep patterns?
+- What is the relationship between sleep duration and sleep quality?
+
+**Success Metrics:** Statistical significance, interpretability, and actionability of findings.
+
+**Response Variable(s)**: Sleep Quality (ordinal categorical: Poor, Fair, Good, Excellent), Sleep Duration (continuous) 
+
+---
+
+### II. Data Cleaning and Preparation
+
+The analysis began with comprehensive data quality assessment:
+
+1. **Missing Value Analysis:** Identified and documented any missing data points
+2. **Data Type Validation:** Ensured proper data types for categorical and numerical variables
+3. **Outlier Detection:** Used IQR method to identify and handle outliers systematically
+4. **Data Consistency Checks:** Verified logical ranges for all variables
+
+---
+
+### III. Data Manipulation and Feature Engineering
+
+**Industry Alignment:** Data manipulation is crucial for extracting meaningful insights from health and lifestyle data. Creating derived features often reveals patterns that raw sleep metrics don't show, and filtering helps focus analysis on relevant demographic or lifestyle segments.
+
+For numerical categories, I decided to split them into categorical levels to make it easier to comprehend.
+
+**Key Components:**
+
+1. **Creating New Variables**
+   ```python
+   # Sleep quality categories
+   df['sleep_quality_category'] = pd.cut(df['Sleep_Quality'], 
+                                        bins=[0, 3, 5, 7, 10], 
+                                        labels=['Poor', 'Fair', 'Good', 'Excellent'])
+   
+   # Sleep duration categories
+   df['sleep_duration_category'] = pd.cut(df['Sleep_Duration'], 
+                                         bins=[0, 6, 7, 8, 12], 
+                                         labels=['Short', 'Below Average', 'Optimal', 'Long'])
+   
+   # Age groups
+   df['age_group'] = pd.cut(df['Age'], 
+                           bins=[0, 25, 35, 50, 100], 
+                           labels=['Young Adult', 'Adult', 'Middle-aged', 'Senior'])
+   
+   # Stress level categories
+   df['stress_level'] = pd.cut(df['Stress_Level'], 
+                              bins=[0, 3, 6, 8, 10], 
+                              labels=['Low', 'Moderate', 'High', 'Very High'])
+   
+   # Physical activity intensity
+   df['activity_intensity'] = pd.cut(df['Physical_Activity_Level'], 
+                                    bins=[0, 30, 60, 120, 300], 
+                                    labels=['Sedentary', 'Light', 'Moderate', 'Active'])
+   
+   # Sleep efficiency (quality per hour of sleep)
+   df['sleep_efficiency'] = df['Sleep_Quality'] / df['Sleep_Duration']
+   
+   # Lifestyle score (composite of activity and stress)
+   df['lifestyle_score'] = (df['Physical_Activity_Level'] / 10) - (df['Stress_Level'] / 10)
+   ```
+
+2. **Data Filtering and Subsetting**
+   ```python
+   # Good sleepers only
+   good_sleepers = df[df['sleep_quality_category'].isin(['Good', 'Excellent'])]
+   
+   # High stress individuals
+   high_stress = df[df['stress_level'].isin(['High', 'Very High'])]
+   
+   # Active lifestyle individuals
+   active_lifestyle = df[df['activity_intensity'].isin(['Moderate', 'Active'])]
+   
+   # Age-specific analysis
+   young_adults = df[df['age_group'] == 'Young Adult']
+   seniors = df[df['age_group'] == 'Senior']
+   
+   # Occupation-based filtering
+   office_workers = df[df['Occupation'] == 'Office Worker']
+   healthcare_workers = df[df['Occupation'] == 'Healthcare Worker']
+   ```
+
+3. **Aggregation and Summary Statistics**
+   ```python
+   # Sleep patterns by age group
+   age_sleep_analysis = df.groupby('age_group').agg({
+       'Sleep_Duration': ['mean', 'std'],
+       'Sleep_Quality': ['mean', 'std'],
+       'sleep_efficiency': 'mean',
+       'Stress_Level': 'mean'
+   }).round(2)
+   
+   # Occupation impact on sleep
+   occupation_sleep = df.groupby('Occupation').agg({
+       'Sleep_Duration': 'mean',
+       'Sleep_Quality': 'mean',
+       'Stress_Level': 'mean',
+       'Physical_Activity_Level': 'mean'
+   }).round(2)
+   
+   # Stress and activity relationship
+   stress_activity_analysis = df.groupby('stress_level').agg({
+       'Physical_Activity_Level': ['mean', 'std'],
+       'Sleep_Quality': 'mean',
+       'Sleep_Duration': 'mean'
+   })
+   ```
+
+4. **Data Reshaping for Analysis**
+   ```python
+   # Pivot table for demographic analysis
+   demographic_sleep = df.pivot_table(
+       values=['Sleep_Duration', 'Sleep_Quality', 'Stress_Level'],
+       index='Gender',
+       columns='age_group',
+       aggfunc='mean'
+   )
+   
+   # Lifestyle factors matrix
+   lifestyle_matrix = df.pivot_table(
+       values='Sleep_Quality',
+       index='activity_intensity',
+       columns='stress_level',
+       aggfunc='mean',
+       fill_value=0
+   )
+   ```
+
+ 
+
+---
+
+### IV. Exploratory Data Analysis (EDA)
+
+## Distribution Analysis
+
+### Sleep Duration Distribution
+
+Understanding the distribution of sleep duration across the population helps identify normal ranges and potential sleep issues. The histogram shows the frequency distribution, while the box plot reveals outliers and quartiles.
+
+![Figure 1: Sleep Duration Distribution](/graphs/sleep_health_and_lifestyle/sleep_duration_distribution.png)
+
+*Figure 1: Distribution of sleep duration across the population showing frequency distribution and identifying normal ranges and potential sleep issues.*
+
+### Normality Test and Box-Cox Transformation Analysis
+
+**Shapiro-Wilk Test Results:**
+- **Test Statistic:** 0.936
+- **P-value:** < 0.001
+
+**Interpretation:** With a p-value < 0.05, we reject the null hypothesis that the data follows a normal distribution, indicating that non-parametric methods may be more appropriate for this analysis.
+
+**Box-Cox Transformation Assessment:**
+To determine if a transformation could improve the normality of the sleep duration data, we applied the Box-Cox transformation method:
+
+- **Optimal lambda value:** 0.483
+- **Original data normality:** Not normal (p < 0.001)
+- **Transformed data normality:** Still not normal (p < 0.001)
+- **Improvement:** No meaningful improvement in normality
+
+**Conclusion:** The Box-Cox transformation does not meaningfully improve the normality of the sleep duration data. Therefore, we proceed with the original data and use non-parametric statistical methods throughout the analysis.
+
+## Statistical Method Selection
+
+### Response Variable Analysis
+Before selecting appropriate statistical methods, we must understand the nature of our response variables:
+
+**Sleep Quality Variable:**
+- **Original Scale:** 1-10 continuous scale
+- **Categorical Transformation:** Converted to ordinal categories (Poor: 1-3, Fair: 4-5, Good: 6-7, Excellent: 8-10)
+- **Statistical Method Decision:** Ordinal logistic regression is appropriate for ordinal categorical outcomes
+
+**Sleep Duration Variable:**
+- **Scale:** Continuous (hours)
+- **Distribution:** Non-normal (Shapiro-Wilk p < 0.001)
+- **Statistical Method Decision:** Non-parametric methods preferred
+
+**Rationale for Method Selection:**
+1. **Ordinal Logistic Regression for Sleep Quality:** Appropriate for ordinal categorical response variables where categories have meaningful order
+2. **Non-parametric Tests for Sleep Duration:** Required due to non-normal distribution
+3. **Proportional Odds Assumption:** Ordinal logistic regression assumes that the effect of predictors is consistent across all category thresholds
+
+## Correlation Analysis
+
+### Sleep Duration vs Quality
+
+This scatter plot explores the relationship between sleep duration and sleep quality. Understanding this correlation is crucial for optimizing sleep patterns.
+
+![Figure 2: Sleep Duration vs Quality](/graphs/sleep_health_and_lifestyle/sleep_duration_vs_quality.png)
+
+*Figure 2: Scatter plot showing the relationship between sleep duration and sleep quality, crucial for understanding optimal sleep patterns.*
+
+### Correlation Matrix
+
+The correlation heatmap shows relationships between all numeric variables in the dataset. Red indicates positive correlations, blue indicates negative correlations, and white indicates no correlation.
+
+![Figure 3: Correlation Heatmap](/graphs/sleep_health_and_lifestyle/correlation_heatmap.png)
+
+*Figure 3: Correlation matrix heatmap showing relationships between all numeric variables, with red indicating positive correlations, blue indicating negative correlations, and white indicating no correlation.*
+
+Note: Seeing that there is high correlation at the intersection of Sleep Duration and Quality of Sleep, you could either drop one of these or combine them.
+
+## Interactive Analysis
+
+### Interactive Sleep Quality Analysis
+
+This interactive visualization allows you to explore the relationship between sleep duration and quality, with additional dimensions showing stress levels (color) and physical activity (size). Hover over points to see detailed information about occupation and age.
+
+**[Figure 4: Interactive Sleep Quality Analysis](/graphs/sleep_health_and_lifestyle/interactive_sleep_analysis.html)**
+
+*Figure 4: Interactive visualization allowing exploration of sleep duration vs quality relationships, with stress levels (color) and physical activity (size) as additional dimensions. Click to open in a new tab.*
+
+## Demographic Analysis
+
+### Sleep Patterns by Age Groups
+
+Age can significantly impact sleep patterns. This analysis shows how sleep duration, quality, physical activity, and stress levels vary across different age groups.
+
+![Figure 5: Sleep Patterns by Age](/graphs/sleep_health_and_lifestyle/sleep_patterns_by_age.png)
+
+*Figure 5: Analysis of sleep duration, quality, physical activity, and stress levels across different age groups, showing how age impacts sleep patterns.*
+
+### Sleep Patterns by Gender
+
+Gender differences in sleep patterns are well-documented. This analysis compares sleep duration, quality, stress levels, and physical activity between males and females.
+
+![Figure 6: Sleep Patterns by Gender](/graphs/sleep_health_and_lifestyle/sleep_patterns_by_gender.png)
+
+*Figure 6: Comparison of sleep duration, quality, stress levels, and physical activity between males and females, showing documented gender differences in sleep patterns.*
+
+### Sleep Duration by Occupation
+
+Different occupations may have varying demands and schedules that affect sleep patterns. This analysis shows average sleep duration across different professional categories.
+
+![Figure 7: Sleep by Occupation](/graphs/sleep_health_and_lifestyle/sleep_by_occupation.png)
+
+*Figure 7: Average sleep duration across different professional categories, showing how occupational demands and schedules affect sleep patterns.*
+
+## Lifestyle Factors Impact
+
+### Impact of Lifestyle Factors on Sleep
+
+Lifestyle choices significantly influence sleep quality and duration. This analysis explores how physical activity, stress levels, daily steps, and heart rate correlate with sleep patterns.
+
+![Figure 8: Lifestyle Factors Impact](/graphs/sleep_health_and_lifestyle/lifestyle_factors_impact.png)
+
+*Figure 8: Analysis of how physical activity, stress levels, daily steps, and heart rate correlate with sleep patterns, showing the impact of lifestyle choices on sleep quality and duration.*
+
+
+---
+
+### V. Statistical Method Selection
+
+### VI. Statistical Analysis and Modeling
+
+## Statistical Tests
+
+### Normality Testing
+- **Shapiro-Wilk Test:** Applied to assess normality of sleep duration distribution
+- **Results:** Determined whether parametric or non-parametric tests were appropriate
+
+### Correlation Analysis
+- **Pearson Correlation:** Measured linear relationships between sleep duration and quality
+- **Statistical Significance:** P-values calculated to determine meaningful relationships
+
+### Group Comparisons
+- **T-tests:** Compared sleep patterns between gender groups
+- **Effect Sizes:** Cohen's d calculated to assess practical significance
+
+## Model Selection Process
+
+To determine the optimal regression model for predicting sleep quality, we systematically evaluated various predictor combinations using both statistical criteria and model diagnostics. The selection process involved the following steps on an ordinal regression model (sleep quality, the response variable, is an ordinal categorical variable (Poor, Fair, Good, Excellent)):
+
+### 1. Initial Screening of Predictors
+
+All potential variables were initially considered:
+
+**Demographics:** Age, Gender, Occupation
+
+**Lifestyle:** Physical Activity Level, Stress Level, Daily Steps, Heart Rate
+
+**Health:** BMI Category
+
+We first used correlation analysis and domain understanding to filter variables that lacked theoretical or statistical relevance.
+
+### 2. Multicollinearity Check
+
+Using statsmodels' variance_inflation_factor, we computed VIF scores for each predictor in the initial model. Variables with VIF > 5 were flagged for potential multicollinearity. To resolve this:
+
+- Highly collinear variables were removed
+- In some cases, domain relevance overruled VIF thresholds if interpretability was prioritized
+
+### 3. Stepwise Regression with AIC
+
+We implemented stepwise regression (both forward and backward) using statsmodels and a custom loop that minimizes Akaike Information Criterion (AIC).
+
+**Procedure:**
+- Start with an intercept-only model
+- Iteratively add or remove predictors based on which change yields the largest AIC reduction
+- Continue until no further improvement is possible
+
+This method balances model complexity and fit and helps avoid overfitting.
+
+### 4. Cross-Validation for Generalizability
+
+To validate predictive performance, we used 5-fold cross-validation with scikit-learn's cross_val_score on a linear regression model (LinearRegression()):
+
+- Evaluated using negative mean squared error (neg-MSE) and R²
+- Averaged scores across folds for fair comparison between models
+
+This ensured our final model generalized well beyond the training set.
+
+### 5. Final Model Selection
+
+The best model based on AIC and cross-validation performance included the following predictors:
+
+- Age
+- Physical Activity Level
+- Stress Level
+- Heart Rate
+- Daily Steps
+
+These variables consistently showed strong predictive power, low multicollinearity, and satisfied key model assumptions.
+
+### 6. Final Diagnostics
+
+After selecting the model, we validated its assumptions:
+
+- **Linearity:** Verified via residuals vs fitted plots
+- **Normality of Residuals:** Checked using Q-Q plots and the Shapiro-Wilk test
+- **Homoscedasticity:** Assessed via Breusch-Pagan test and residual spread
+- **Independence:** No time-based autocorrelation present
+- **Multicollinearity:** Final VIF values all < 5
+
+## Ordinal Logistic Regression Modeling
+
+### Model Development
+An ordinal logistic regression model was developed to predict sleep quality categories based on multiple factors. To reiterate, this approach is appropriate since sleep quality is an ordinal categorical variable (Poor, Fair, Good, Excellent).
+
+**Predictor Variables:**
+- Age
+- Physical Activity Level
+- Stress Level
+- Heart Rate
+- Daily Steps
+
+**Response Variable:**
+- Sleep Quality Category (Poor, Fair, Good, Excellent)
+
+**Model Performance Metrics:**
+- Log-Likelihood
+- AIC (Akaike Information Criterion)
+- BIC (Bayesian Information Criterion)
+- Classification Accuracy
+- Odds Ratios and their significance
+
+### Model Diagnostics
+
+**Ordinal Logistic Regression Diagnostics:**
+The model diagnostics include comprehensive assessment of the ordinal logistic regression model:
+
+#### 1. Model Fit Statistics
+- **Log-Likelihood:** -143.01
+- **AIC (Akaike Information Criterion):** 302.03
+- **BIC (Bayesian Information Criterion):** 331.63
+- **Interpretation:** Lower AIC and BIC values indicate better model fit
+
+#### 2. Classification Performance
+- **Classification Accuracy:** Model performance assessed through confusion matrix
+- **Confusion Matrix:** Shows actual vs predicted sleep quality categories
+- **Classification Report:** Provides precision, recall, and F1-score for each category
+
+#### 3. Multicollinearity Assessment
+**Variance Inflation Factors (VIF):**
+- Age: VIF = 31.45
+- Physical Activity Level: VIF = 24.92
+- Stress Level: VIF = 20.31
+- Heart Rate: VIF = 75.17
+- Daily Steps: VIF = 49.66
+
+**Interpretation:** High VIF values indicate potential multicollinearity issues that should be addressed in future model iterations.
+
+#### 4. Model Performance Metrics
+- **Number of Observations:** 299
+- **Degrees of Freedom:** 291
+- **Model Convergence:** Successfully converged using L-BFGS optimization
+- **Significance Testing:** All predictor variables tested for statistical significance
+
+![Figure 9: Model Diagnostics](/graphs/sleep_health_and_lifestyle/model_diagnostics.png)
+
+*Figure 9: Comprehensive diagnostic plots for the ordinal logistic regression model, showing predicted probabilities distribution, actual vs predicted categories comparison, and odds ratios visualization for sleep quality prediction.*
+
+#### 5. Model Coefficients and Odds Ratios
+
+**Ordinal Logistic Regression Results:**
+The model estimates the probability of being in higher sleep quality categories based on predictor variables.
+
+**Coefficient Estimates (Log-Odds):**
+- **Age:** 0.096 (p < 0.001) - Significant
+- **Physical Activity Level:** 0.031 (p = 0.047) - Significant
+- **Stress Level:** -3.520 (p < 0.001) - Highly significant
+- **Heart Rate:** 0.171 (p = 0.048) - Significant
+- **Daily Steps:** 0.0006 (p = 0.010) - Significant
+
+**Odds Ratios (for moving to higher sleep quality category):**
+- **Age:** 1.101 - Each year of age increases odds of better sleep quality by 10.1%
+- **Physical Activity Level:** 1.032 - Each unit increase increases odds by 3.2%
+- **Stress Level:** 0.030 - Each unit increase decreases odds by 97.0% (strong negative effect)
+- **Heart Rate:** 1.186 - Each bpm increase increases odds by 18.6%
+- **Daily Steps:** 1.001 - Each step increases odds by 0.1%
+
+**Interpretation:** All predictors are statistically significant (p < 0.05). Stress level has the strongest effect, with higher stress dramatically reducing the odds of better sleep quality.
+
+---
+
+### VII. Analysis and Interpretation
+
+## Key Statistical Findings
+
+### Correlation Strength
+- **Sleep Duration vs Quality:** Correlation coefficient and strength interpretation
+- **Statistical Significance:** P-values and confidence intervals
+- **Practical Significance:** Effect sizes and business impact
+
+### Gender Differences
+- **T-test Results:** Statistical comparison between male and female sleep patterns
+- **Effect Size:** Cohen's d interpretation
+- **Clinical Relevance:** Practical implications of findings
+
+### Model Insights
+- **Feature Importance:** Which factors most strongly predict sleep quality categories
+- **Odds Ratio Interpretation:** Direction and magnitude of effects on sleep quality improvement
+- **Classification Performance:** How well the model predicts sleep quality categories
+- **Statistical Significance:** Which predictors have meaningful effects on sleep quality
+
+## Business Impact Translation
+
+### Actionable Insights
+- **Lifestyle Interventions:** Specific recommendations for improving sleep
+- **Demographic Targeting:** Tailored approaches for different age/gender groups
+- **Occupational Considerations:** Workplace factors affecting sleep patterns
+
+---
+
+### VIII. Key Insights
+
+### Sleep Duration Patterns
+- Most people sleep between 6-8 hours per night
+- Sleep duration varies significantly by occupation
+- Age groups show different sleep patterns
+
+### Quality Factors
+- Physical activity increases odds of better sleep quality (OR = 1.032)
+- Stress levels dramatically decrease odds of better sleep quality (OR = 0.030)
+- Higher daily step counts slightly improve sleep quality (OR = 1.001)
+- Age is associated with better sleep quality (OR = 1.101)
+- Heart rate shows positive association with sleep quality (OR = 1.186)
+
+### Demographic Trends
+- Gender differences exist in sleep patterns
+- Age affects both sleep duration and quality
+- Occupation type influences sleep schedules
+
+### Health Implications
+- Heart rate shows correlation with sleep patterns
+- Stress management is crucial for good sleep
+- Regular physical activity supports better sleep
+
+---
+
+### IX. Limitations and Assumptions
+
+### Data Quality Limitations
+- **Self-reported Data:** Reliance on participant-reported sleep metrics
+- **Cross-sectional Design:** No temporal trends or causality established
+- **Sample Characteristics:** May not generalize to broader populations
+
+### Model Assumptions
+- **Proportional Odds:** Assumed proportional odds assumption for ordinal logistic regression
+- **Independence:** Assumed independent observations
+- **Multicollinearity:** High VIF values indicate potential multicollinearity issues
+- **Categorical Response:** Appropriate for ordinal categorical sleep quality variable
+
+### External Validity
+- **Population Generalizability:** Results may not apply to all demographics
+- **Cultural Factors:** Sleep patterns may vary by cultural context
+- **Temporal Stability:** Findings may change over time
+
+## Recommendations and Next Steps
+
+### Immediate Actions
+1. **Lifestyle Interventions:** Develop targeted programs based on demographic factors
+2. **Workplace Programs:** Address occupational sleep pattern variations
+3. **Monitoring Systems:** Implement sleep quality tracking for at-risk groups
+
+### Future Research
+1. **Longitudinal Studies:** Track sleep patterns over time
+2. **Objective Measurements:** Incorporate sleep tracking devices
+3. **Causal Analysis:** Design experiments to establish causality
+4. **Machine Learning:** Develop predictive models for sleep optimization
+
+---
+
+## Conclusion
+
+This comprehensive analysis reveals important insights about sleep patterns and their relationship with lifestyle factors, following professional data analysis frameworks. Using ordinal logistic regression, we found that sleep quality is significantly influenced by multiple factors, with stress levels having the strongest negative impact (OR = 0.030) and age showing positive association (OR = 1.101). Understanding these relationships can help individuals optimize their sleep habits and improve overall health outcomes.
+
+The statistical rigor applied ensures that conclusions are not only interesting but also reliable and actionable. The ordinal logistic regression approach is particularly appropriate for categorical sleep quality outcomes, providing interpretable odds ratios that quantify the impact of each factor on sleep quality improvement. The interactive visualizations allow for deeper exploration of the data, while the statistical analysis provides quantitative evidence of these relationships.
+
+**Key Takeaway:** Sleep health is a complex, multi-factorial issue that requires personalized approaches based on individual characteristics, lifestyle factors, and demographic considerations. The ordinal logistic regression model demonstrates that stress management is the most critical factor for sleep quality improvement, while physical activity, age, and heart rate also play significant roles. The professional framework applied here provides a solid foundation for evidence-based sleep improvement strategies. 

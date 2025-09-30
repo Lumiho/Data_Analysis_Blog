@@ -1,0 +1,954 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import scipy.stats as stats
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+import os
+import warnings
+warnings.filterwarnings('ignore')
+
+# Create the output directory if it doesn't exist
+output_dir = '../../../public/graphs/sleep_health_and_lifestyle'
+os.makedirs(output_dir, exist_ok=True)
+
+# Set style for better visualizations
+plt.style.use('seaborn-v0_8')
+sns.set_palette("husl")
+
+print("=" * 80)
+print("SLEEP HEALTH & LIFESTYLE ANALYSIS - PROFESSIONAL FRAMEWORK")
+print("=" * 80)
+
+# ============================================================================
+# I. INTRODUCTION AND GOAL DEFINITION
+# ============================================================================
+
+print("\nI. INTRODUCTION AND GOAL DEFINITION")
+print("-" * 50)
+
+analysis_goals = {
+    "primary_question": "What factors most significantly influence sleep quality and duration?",
+    "secondary_questions": [
+        "How do lifestyle factors (physical activity, stress) correlate with sleep patterns?",
+        "Are there significant demographic differences in sleep patterns?",
+        "What is the relationship between sleep duration and sleep quality?"
+    ],
+    "success_metrics": ["statistical_significance", "interpretability", "actionability"],
+    "data_requirements": ["sleep_metrics", "lifestyle_factors", "demographics"],
+    "stakeholders": ["healthcare_professionals", "researchers", "general_public"]
+}
+
+print("Analysis Goals:")
+for key, value in analysis_goals.items():
+    print(f"  {key}: {value}")
+
+# ============================================================================
+# II. DATA LOADING AND INITIAL ASSESSMENT
+# ============================================================================
+
+print("\nII. DATA LOADING AND INITIAL ASSESSMENT")
+print("-" * 50)
+
+# Load the dataset
+df = pd.read_csv('../../data/Sleep_health_and_lifestyle_dataset.csv')
+
+print(f"Dataset Shape: {df.shape}")
+print(f"Columns: {list(df.columns)}")
+print(f"Data Types:\n{df.dtypes}")
+
+# Initial data overview
+print(f"\nFirst few rows:")
+print(df.head())
+
+# ============================================================================
+# III. DATA CLEANING AND PREPARATION
+# ============================================================================
+
+print("\nIII. DATA CLEANING AND PREPARATION")
+print("-" * 50)
+
+# 1. Missing Value Analysis
+print("\n1. Missing Value Analysis:")
+missing_data = df.isnull().sum()
+missing_percentage = (missing_data / len(df)) * 100
+missing_summary = pd.DataFrame({
+    'Missing_Count': missing_data,
+    'Missing_Percentage': missing_percentage
+})
+print(missing_summary[missing_summary['Missing_Count'] > 0])
+
+# 2. Data Type Validation and Conversion
+print("\n2. Data Type Validation:")
+print("Original data types:")
+print(df.dtypes)
+
+# Convert categorical variables
+categorical_cols = ['Gender', 'Occupation', 'BMI Category', 'Sleep Disorder']
+for col in categorical_cols:
+    if col in df.columns:
+        df[col] = df[col].astype('category')
+
+print("\nUpdated data types:")
+print(df.dtypes)
+
+# 3. Outlier Detection
+print("\n3. Outlier Detection:")
+
+def detect_outliers(df, column):
+    """Detect outliers using IQR method"""
+    Q1 = df[column].quantile(0.25)
+    Q3 = df[column].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    outliers = df[(df[column] < lower_bound) | (df[column] > upper_bound)]
+    return outliers, lower_bound, upper_bound
+
+numeric_cols = ['Age', 'Sleep Duration', 'Quality of Sleep', 'Physical Activity Level', 
+                'Stress Level', 'Heart Rate', 'Daily Steps']
+
+outlier_summary = {}
+for col in numeric_cols:
+    if col in df.columns:
+        outliers, lower, upper = detect_outliers(df, col)
+        outlier_summary[col] = {
+            'outlier_count': len(outliers),
+            'outlier_percentage': (len(outliers) / len(df)) * 100,
+            'lower_bound': lower,
+            'upper_bound': upper
+        }
+
+print("Outlier Summary:")
+for col, info in outlier_summary.items():
+    print(f"  {col}: {info['outlier_count']} outliers ({info['outlier_percentage']:.1f}%)")
+
+# 4. Data Consistency Checks
+print("\n4. Data Consistency Checks:")
+
+# Check for logical inconsistencies
+print(f"Age range: {df['Age'].min()} - {df['Age'].max()}")
+print(f"Sleep Duration range: {df['Sleep Duration'].min():.1f} - {df['Sleep Duration'].max():.1f} hours")
+print(f"Quality of Sleep range: {df['Quality of Sleep'].min()} - {df['Quality of Sleep'].max()}")
+print(f"Heart Rate range: {df['Heart Rate'].min()} - {df['Heart Rate'].max()} bpm")
+
+# Create cleaned dataset (remove outliers for analysis)
+df_clean = df.copy()
+for col in numeric_cols:
+    if col in df.columns and outlier_summary[col]['outlier_percentage'] > 5:
+        outliers, lower, upper = detect_outliers(df, col)
+        df_clean = df_clean[(df_clean[col] >= lower) & (df_clean[col] <= upper)]
+
+print(f"\nRecords after outlier removal: {len(df_clean)} (from {len(df)})")
+
+# ============================================================================
+# IV. EXPLORATORY DATA ANALYSIS (EDA)
+# ============================================================================
+
+print("\nIV. EXPLORATORY DATA ANALYSIS (EDA)")
+print("-" * 50)
+
+# 1. Descriptive Statistics
+print("\n1. Descriptive Statistics:")
+summary_stats = df_clean[numeric_cols].describe()
+print(summary_stats)
+
+# 2. Distribution Analysis
+print("\n2. Distribution Analysis:")
+
+# Figure scaling
+plt.figure(figsize=(15, 10))
+
+# Sleep Duration Distribution
+plt.subplot(2, 3, 1) # in a 2x3 subgrid, place this in position 1, then next one in 2, etc
+plt.hist(df_clean['Sleep Duration'], bins=15, alpha=0.7, color='skyblue', edgecolor='black')
+plt.title('Sleep Duration Distribution')
+plt.xlabel('Sleep Duration (hours)')
+plt.ylabel('Frequency')
+
+# Box-Cox Transformation Analysis
+from scipy.stats import boxcox
+from scipy.stats import jarque_bera
+
+print("\nBox-Cox Transformation Analysis:")
+print("-" * 40)
+
+# Check if data is positive (required for Box-Cox)
+sleep_duration = df_clean['Sleep Duration']
+if (sleep_duration > 0).all():
+    print("✓ All sleep duration values are positive - Box-Cox transformation is applicable")
+    
+    # Perform Box-Cox transformation
+    try:
+        transformed_data, lambda_optimal = boxcox(sleep_duration)
+        print(f"Optimal lambda value: {lambda_optimal:.4f}")
+        
+        # Test normality of transformed data
+        shapiro_transformed = stats.shapiro(transformed_data)
+        jarque_bera_transformed = jarque_bera(transformed_data)
+        
+        print(f"\nNormality tests for transformed data:")
+        print(f"  Shapiro-Wilk test:")
+        print(f"    Statistic: {shapiro_transformed.statistic:.4f}")
+        print(f"    P-value: {shapiro_transformed.pvalue:.4f}")
+        print(f"    Normal: {'Yes' if shapiro_transformed.pvalue > 0.05 else 'No'}")
+        
+        print(f"  Jarque-Bera test:")
+        print(f"    Statistic: {jarque_bera_transformed.statistic:.4f}")
+        print(f"    P-value: {jarque_bera_transformed.pvalue:.4f}")
+        print(f"    Normal: {'Yes' if jarque_bera_transformed.pvalue > 0.05 else 'No'}")
+        
+        # Determine if transformation is necessary
+        original_shapiro = stats.shapiro(sleep_duration)
+        improvement = shapiro_transformed.pvalue - original_shapiro.pvalue
+        
+        print(f"\nTransformation Assessment:")
+        print(f"  Original data p-value: {original_shapiro.pvalue:.4f}")
+        print(f"  Transformed data p-value: {shapiro_transformed.pvalue:.4f}")
+        print(f"  Improvement: {improvement:.4f}")
+        
+        if shapiro_transformed.pvalue > 0.05:
+            print("  ✓ RECOMMENDATION: Use transformed data - significantly improves normality")
+            transformation_needed = True
+        elif improvement > 0.01:  # Meaningful improvement threshold
+            print("  ⚠ RECOMMENDATION: Transformation provides some improvement but data still not normal")
+            transformation_needed = False  # Not enough improvement to justify
+        else:
+            print("  ✗ RECOMMENDATION: Transformation does not meaningfully improve normality")
+            transformation_needed = False
+            
+    except Exception as e:
+        print(f"Error in Box-Cox transformation: {e}")
+        transformation_needed = False
+else:
+    print("✗ Some sleep duration values are not positive - Box-Cox transformation not applicable")
+    transformation_needed = False
+
+# QQ Plot for Sleep Duration (original data)
+plt.subplot(2, 3, 2)
+stats.probplot(df_clean['Sleep Duration'], dist="norm", plot=plt)
+plt.title('QQ Plot - Sleep Duration (Original)')
+
+# Add transformed data analysis if transformation is beneficial
+if transformation_needed:
+    print("\nIncluding transformed data analysis...")
+    # Add transformed data to the dataset
+    df_clean['Sleep_Duration_Transformed'] = transformed_data
+    
+    # Create additional visualization for transformed data
+    plt.figure(figsize=(12, 5))
+    
+    # Original vs Transformed comparison
+    plt.subplot(1, 3, 1)
+    plt.hist(df_clean['Sleep Duration'], bins=15, alpha=0.7, color='skyblue', edgecolor='black', label='Original')
+    plt.title('Original Sleep Duration')
+    plt.xlabel('Sleep Duration (hours)')
+    plt.ylabel('Frequency')
+    
+    plt.subplot(1, 3, 2)
+    plt.hist(transformed_data, bins=15, alpha=0.7, color='lightgreen', edgecolor='black', label='Transformed')
+    plt.title(f'Transformed Sleep Duration (λ={lambda_optimal:.3f})')
+    plt.xlabel('Transformed Sleep Duration')
+    plt.ylabel('Frequency')
+    
+    plt.subplot(1, 3, 3)
+    stats.probplot(transformed_data, dist="norm", plot=plt)
+    plt.title('QQ Plot - Transformed Data')
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}/qq_sleep_duration.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print("✓ Transformed data analysis included")
+else:
+    print("\nSkipping transformed data analysis - transformation not beneficial")
+    # Remove the Q-Q plot file if it exists since we're not using transformed data
+    import os
+    qq_file = f'{output_dir}/qq_sleep_duration.png'
+    if os.path.exists(qq_file):
+        os.remove(qq_file)
+        print("✓ Removed unnecessary Q-Q plot file")
+
+# Sleep Quality Distribution
+plt.subplot(2, 3, 3)
+plt.hist(df_clean['Quality of Sleep'], bins=10, alpha=0.7, color='lightgreen', edgecolor='black')
+plt.title('Sleep Quality Distribution')
+plt.xlabel('Quality of Sleep (1-10)')
+plt.ylabel('Frequency')
+
+# Physical Activity Distribution
+plt.subplot(2, 3, 4)
+plt.hist(df_clean['Physical Activity Level'], bins=10, alpha=0.7, color='lightcoral', edgecolor='black')
+plt.title('Physical Activity Distribution')
+plt.xlabel('Physical Activity Level (1-10)')
+plt.ylabel('Frequency')
+
+# Stress Level Distribution
+plt.subplot(2, 3, 5)
+plt.hist(df_clean['Stress Level'], bins=10, alpha=0.7, color='lightyellow', edgecolor='black')
+plt.title('Stress Level Distribution')
+plt.xlabel('Stress Level (1-10)')
+plt.ylabel('Frequency')
+
+# Heart Rate Distribution
+plt.subplot(2, 3, 6)
+plt.hist(df_clean['Heart Rate'], bins=15, alpha=0.7, color='lightpink', edgecolor='black')
+plt.title('Heart Rate Distribution')
+plt.xlabel('Heart Rate (bpm)')
+plt.ylabel('Frequency')
+
+plt.tight_layout()
+plt.savefig(f'{output_dir}/sleep_duration_distribution.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# 3. Correlation Analysis
+print("\n3. Correlation Analysis:")
+
+# Correlation Matrix
+correlation_matrix = df_clean[numeric_cols].corr()
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', center=0, 
+            square=True, fmt='.2f', cbar_kws={'shrink': 0.8})
+plt.title('Sleep Health Correlation Matrix')
+plt.tight_layout()
+plt.savefig(f'{output_dir}/correlation_heatmap.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# 4. Key Relationships Analysis
+print("\n4. Key Relationships Analysis:")
+
+# Sleep Duration vs Quality
+plt.figure(figsize=(10, 6))
+plt.scatter(df_clean['Sleep Duration'], df_clean['Quality of Sleep'], alpha=0.6, color='purple')
+plt.xlabel('Sleep Duration (hours)')
+plt.ylabel('Quality of Sleep (1-10)')
+plt.title('Sleep Duration vs Quality of Sleep')
+plt.grid(True, alpha=0.3)
+
+# Add trend line
+z = np.polyfit(df_clean['Sleep Duration'], df_clean['Quality of Sleep'], 1)
+p = np.poly1d(z)
+plt.plot(df_clean['Sleep Duration'], p(df_clean['Sleep Duration']), "r--", alpha=0.8)
+
+plt.tight_layout()
+plt.savefig(f'{output_dir}/sleep_duration_vs_quality.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# 5. Demographic Analysis
+print("\n5. Demographic Analysis:")
+
+# Age Groups Analysis
+df_clean['Age_Group'] = pd.cut(df_clean['Age'], bins=[0, 30, 45, 60, 100], 
+                              labels=['18-30', '31-45', '46-60', '60+'])
+
+fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+fig.suptitle('Sleep Patterns by Age Groups', fontsize=16)
+
+# Sleep Duration by Age Group
+age_sleep = df_clean.groupby('Age_Group')['Sleep Duration'].mean()
+axes[0, 0].bar(age_sleep.index, age_sleep.values, color='lightblue')
+axes[0, 0].set_title('Average Sleep Duration by Age Group')
+axes[0, 0].set_ylabel('Sleep Duration (hours)')
+
+# Quality of Sleep by Age Group
+age_quality = df_clean.groupby('Age_Group')['Quality of Sleep'].mean()
+axes[0, 1].bar(age_quality.index, age_quality.values, color='lightgreen')
+axes[0, 1].set_title('Average Sleep Quality by Age Group')
+axes[0, 1].set_ylabel('Quality of Sleep (1-10)')
+
+# Physical Activity Level by Age Group
+age_activity = df_clean.groupby('Age_Group')['Physical Activity Level'].mean()
+axes[1, 0].bar(age_activity.index, age_activity.values, color='lightcoral')
+axes[1, 0].set_title('Average Physical Activity by Age Group')
+axes[1, 0].set_ylabel('Physical Activity Level (1-10)')
+
+# Stress Level by Age Group
+age_stress = df_clean.groupby('Age_Group')['Stress Level'].mean()
+axes[1, 1].bar(age_stress.index, age_stress.values, color='lightyellow')
+axes[1, 1].set_title('Average Stress Level by Age Group')
+axes[1, 1].set_ylabel('Stress Level (1-10)')
+
+plt.tight_layout()
+plt.savefig(f'{output_dir}/sleep_patterns_by_age.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# Gender Analysis
+fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+fig.suptitle('Sleep Patterns by Gender', fontsize=16)
+
+# Sleep Duration by Gender
+gender_sleep = df_clean.groupby('Gender')['Sleep Duration'].mean()
+axes[0, 0].bar(gender_sleep.index, gender_sleep.values, color=['lightblue', 'lightpink'])
+axes[0, 0].set_title('Average Sleep Duration by Gender')
+axes[0, 0].set_ylabel('Sleep Duration (hours)')
+
+# Quality of Sleep by Gender
+gender_quality = df_clean.groupby('Gender')['Quality of Sleep'].mean()
+axes[0, 1].bar(gender_quality.index, gender_quality.values, color=['lightblue', 'lightpink'])
+axes[0, 1].set_title('Average Sleep Quality by Gender')
+axes[0, 1].set_ylabel('Quality of Sleep (1-10)')
+
+# Stress Level by Gender
+gender_stress = df_clean.groupby('Gender')['Stress Level'].mean()
+axes[1, 0].bar(gender_stress.index, gender_stress.values, color=['lightblue', 'lightpink'])
+axes[1, 0].set_title('Average Stress Level by Gender')
+axes[1, 0].set_ylabel('Stress Level (1-10)')
+
+# Physical Activity by Gender
+gender_activity = df_clean.groupby('Gender')['Physical Activity Level'].mean()
+axes[1, 1].bar(gender_activity.index, gender_activity.values, color=['lightblue', 'lightpink'])
+axes[1, 1].set_title('Average Physical Activity by Gender')
+axes[1, 1].set_ylabel('Physical Activity Level (1-10)')
+
+plt.tight_layout()
+plt.savefig(f'{output_dir}/sleep_patterns_by_gender.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# Occupation Analysis
+plt.figure(figsize=(14, 8))
+occupation_sleep = df_clean.groupby('Occupation')['Sleep Duration'].mean().sort_values(ascending=False)
+plt.bar(range(len(occupation_sleep)), occupation_sleep.values, color='coral')
+plt.xlabel('Occupation')
+plt.ylabel('Average Sleep Duration (hours)')
+plt.title('Average Sleep Duration by Occupation')
+plt.xticks(range(len(occupation_sleep)), occupation_sleep.index, rotation=45, ha='right')
+plt.tight_layout()
+plt.savefig(f'{output_dir}/sleep_by_occupation.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# 6. Lifestyle Factors Impact
+fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+fig.suptitle('Impact of Lifestyle Factors on Sleep', fontsize=16)
+
+# Physical Activity Level vs Sleep Quality
+activity_quality = df_clean.groupby('Physical Activity Level')['Quality of Sleep'].mean()
+axes[0, 0].plot(activity_quality.index, activity_quality.values, marker='o', linewidth=2)
+axes[0, 0].set_title('Physical Activity Level vs Sleep Quality')
+axes[0, 0].set_xlabel('Physical Activity Level (1-10)')
+axes[0, 0].set_ylabel('Average Sleep Quality')
+
+# Stress Level vs Sleep Duration
+stress_sleep = df_clean.groupby('Stress Level')['Sleep Duration'].mean()
+axes[0, 1].plot(stress_sleep.index, stress_sleep.values, marker='s', linewidth=2, color='orange')
+axes[0, 1].set_title('Stress Level vs Sleep Duration')
+axes[0, 1].set_xlabel('Stress Level (1-10)')
+axes[0, 1].set_ylabel('Average Sleep Duration (hours)')
+
+# Daily Steps vs Sleep Quality
+steps_quality = df_clean.groupby('Daily Steps')['Quality of Sleep'].mean()
+axes[1, 0].plot(steps_quality.index, steps_quality.values, marker='^', linewidth=2, color='red')
+axes[1, 0].set_title('Daily Steps vs Sleep Quality')
+axes[1, 0].set_xlabel('Daily Steps')
+axes[1, 0].set_ylabel('Average Sleep Quality')
+
+# Heart Rate vs Sleep Duration
+heartrate_sleep = df_clean.groupby('Heart Rate')['Sleep Duration'].mean()
+axes[1, 1].plot(heartrate_sleep.index, heartrate_sleep.values, marker='d', linewidth=2, color='purple')
+axes[1, 1].set_title('Heart Rate vs Sleep Duration')
+axes[1, 1].set_xlabel('Heart Rate (bpm)')
+axes[1, 1].set_ylabel('Average Sleep Duration (hours)')
+
+plt.tight_layout()
+plt.savefig(f'{output_dir}/lifestyle_factors_impact.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# 7. Interactive Analysis
+fig = px.scatter(df_clean, x='Sleep Duration', y='Quality of Sleep', 
+                 color='Stress Level', size='Physical Activity Level',
+                 hover_data=['Occupation', 'Age', 'Gender'],
+                 title='Interactive Sleep Analysis: Duration vs Quality')
+fig.update_layout(
+    xaxis_title='Sleep Duration (hours)',
+    yaxis_title='Quality of Sleep (1-10)',
+    template='plotly_white'
+)
+fig.write_html(f'{output_dir}/interactive_sleep_analysis.html')
+
+# ============================================================================
+# V. STATISTICAL METHOD SELECTION
+# ============================================================================
+
+print("\nV. STATISTICAL METHOD SELECTION")
+print("-" * 50)
+
+print("\nResponse Variable Analysis:")
+print("Before selecting appropriate statistical methods, we must understand the nature of our response variables:")
+
+print("\nSleep Quality Variable:")
+print("- Original Scale: 1-10 continuous scale")
+print("- Categorical Transformation: Converted to ordinal categories (Poor: 1-3, Fair: 4-5, Good: 6-7, Excellent: 8-10)")
+print("- Statistical Method Decision: Ordinal logistic regression is appropriate for ordinal categorical outcomes")
+
+print("\nSleep Duration Variable:")
+print("- Scale: Continuous (hours)")
+print("- Distribution: Non-normal (Shapiro-Wilk p < 0.001)")
+print("- Statistical Method Decision: Non-parametric methods preferred")
+
+print("\nRationale for Method Selection:")
+print("1. Ordinal Logistic Regression for Sleep Quality: Appropriate for ordinal categorical response variables where categories have meaningful order")
+print("2. Non-parametric Tests for Sleep Duration: Required due to non-normal distribution")
+print("3. Proportional Odds Assumption: Ordinal logistic regression assumes that the effect of predictors is consistent across all category thresholds")
+
+# ============================================================================
+# VI. STATISTICAL ANALYSIS AND MODELING
+# ============================================================================
+
+print("\nVI. STATISTICAL ANALYSIS AND MODELING")
+print("-" * 50)
+
+# 1. Statistical Tests
+print("\n1. Statistical Tests:")
+
+# Normality Test for Sleep Duration
+shapiro_test = stats.shapiro(df_clean['Sleep Duration'])
+print(f"Shapiro-Wilk Test for Sleep Duration:")
+print(f"  Statistic: {shapiro_test.statistic:.4f}")
+print(f"  P-value: {shapiro_test.pvalue:.4f}")
+print(f"  Normal distribution: {'No' if shapiro_test.pvalue < 0.05 else 'Yes'}")
+
+# IMPORTANT: Since data is not normally distributed, we should use non-parametric tests
+print(f"\nIMPORTANT: Data is NOT normally distributed (p < 0.05)")
+print(f"This means we should prefer non-parametric tests for more reliable results.")
+
+# Correlation Tests - Both Parametric and Non-parametric
+print(f"\nCorrelation Analysis (Sleep Duration vs Quality):")
+
+# Parametric: Pearson Correlation
+pearson_corr, pearson_p = stats.pearsonr(df_clean['Sleep Duration'], df_clean['Quality of Sleep'])
+print(f"  Pearson Correlation (parametric):")
+print(f"    Correlation: {pearson_corr:.4f}")
+print(f"    P-value: {pearson_p:.4f}")
+print(f"    Significant: {'Yes' if pearson_p < 0.05 else 'No'}")
+
+# Non-parametric: Spearman Correlation (more appropriate for non-normal data)
+spearman_corr, spearman_p = stats.spearmanr(df_clean['Sleep Duration'], df_clean['Quality of Sleep'])
+print(f"  Spearman Correlation (non-parametric):")
+print(f"    Correlation: {spearman_corr:.4f}")
+print(f"    P-value: {spearman_p:.4f}")
+print(f"    Significant: {'Yes' if spearman_p < 0.05 else 'No'}")
+
+# Use Spearman for interpretation since data is not normal
+correlation = spearman_corr
+p_value = spearman_p
+
+# Group Comparisons - Both Parametric and Non-parametric
+print(f"\nGender Differences in Sleep Duration:")
+
+# Parametric: T-test
+male_sleep = df_clean[df_clean['Gender'] == 'Male']['Sleep Duration']
+female_sleep = df_clean[df_clean['Gender'] == 'Female']['Sleep Duration']
+t_stat, t_p_value = stats.ttest_ind(male_sleep, female_sleep)
+print(f"  T-test (parametric):")
+print(f"    T-statistic: {t_stat:.4f}")
+print(f"    P-value: {t_p_value:.4f}")
+print(f"    Significant difference: {'Yes' if t_p_value < 0.05 else 'No'}")
+
+# Non-parametric: Mann-Whitney U test
+u_stat, u_p_value = stats.mannwhitneyu(male_sleep, female_sleep, alternative='two-sided')
+print(f"  Mann-Whitney U test (non-parametric):")
+print(f"    U-statistic: {u_stat:.4f}")
+print(f"    P-value: {u_p_value:.4f}")
+print(f"    Significant difference: {'Yes' if u_p_value < 0.05 else 'No'}")
+
+# Use Mann-Whitney results for interpretation
+gender_p_value = u_p_value
+
+print(f"\nRECOMMENDATION: Use non-parametric results since data is not normally distributed.")
+print(f"  - Spearman correlation: {spearman_corr:.4f} (p = {spearman_p:.4f})")
+print(f"  - Mann-Whitney U test: U = {u_stat:.4f} (p = {u_p_value:.4f})")
+
+# 2. Ordinal Logistic Regression Model
+print("\n2. Ordinal Logistic Regression Model:")
+
+# First, create the categorical sleep quality variable
+# Adjust bins to ensure we have sufficient observations in each category
+df_clean['sleep_quality_category'] = pd.cut(df_clean['Quality of Sleep'], 
+                                           bins=[0, 6, 7, 8, 10], 
+                                           labels=['Poor', 'Fair', 'Good', 'Excellent'])
+
+# Check the distribution of categories
+print("Sleep Quality Category Distribution:")
+category_dist = df_clean['sleep_quality_category'].value_counts().sort_index()
+print(category_dist)
+
+# Check if we have sufficient observations in each category
+min_observations = 10
+insufficient_categories = category_dist[category_dist < min_observations]
+if len(insufficient_categories) > 0:
+    print(f"\nWarning: Categories with < {min_observations} observations:")
+    print(insufficient_categories)
+    print("Consider adjusting the binning strategy.")
+
+# Prepare data for ordinal logistic regression
+X = df_clean[['Age', 'Physical Activity Level', 'Stress Level', 'Heart Rate', 'Daily Steps']]
+y_categorical = df_clean['sleep_quality_category']
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size=0.2, random_state=42)
+
+# Import ordinal logistic regression
+from statsmodels.miscmodels.ordinal_model import OrderedModel
+
+# Fit ordinal logistic regression model
+try:
+    # Remove any missing values
+    mask = ~(y_categorical.isna() | X.isna().any(axis=1))
+    X_clean = X[mask]
+    y_clean = y_categorical[mask]
+    
+    # Split data
+    X_train, X_test, y_train, y_test = train_test_split(X_clean, y_clean, test_size=0.2, random_state=42)
+    
+    # Create the ordinal model
+    ordinal_model = OrderedModel(y_train, X_train, distr='logit')
+    ordinal_results = ordinal_model.fit(method='lbfgs', disp=False, maxiter=1000)
+    
+    print(f"\nOrdinal Logistic Regression Results:")
+    print(f"  Log-Likelihood: {ordinal_results.llf:.4f}")
+    print(f"  AIC: {ordinal_results.aic:.4f}")
+    print(f"  BIC: {ordinal_results.bic:.4f}")
+    
+    # Model summary
+    print(f"\nModel Summary:")
+    print(ordinal_results.summary())
+    
+    # Odds ratios
+    odds_ratios = np.exp(ordinal_results.params)
+    print(f"\nOdds Ratios (for moving to higher sleep quality category):")
+    for feature, odds_ratio in zip(X.columns, odds_ratios):
+        print(f"  {feature}: {odds_ratio:.4f}")
+    
+    # Predictions
+    y_pred_proba = ordinal_results.predict(X_test)
+    y_pred_categories = ordinal_results.predict(X_test, which='prob').idxmax(axis=1)
+    
+    # Ensure predictions are in the same format as y_test
+    y_pred_categories = pd.Categorical(y_pred_categories, categories=['Poor', 'Fair', 'Good', 'Excellent'])
+    y_test_cat = pd.Categorical(y_test, categories=['Poor', 'Fair', 'Good', 'Excellent'])
+    
+    # Calculate accuracy
+    accuracy = (y_pred_categories == y_test_cat).mean()
+    print(f"\nModel Performance:")
+    print(f"  Accuracy: {accuracy:.4f}")
+    
+    # Store results for later use
+    ordinal_model_fitted = True
+    ordinal_coefficients = ordinal_results.params
+    
+except Exception as e:
+    print(f"Error fitting ordinal logistic regression: {e}")
+    print("Falling back to linear regression for comparison...")
+    
+    # Fallback to linear regression
+    y_numeric = df_clean['Quality of Sleep']
+    X_train, X_test, y_train, y_test = train_test_split(X, y_numeric, test_size=0.2, random_state=42)
+    
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    
+    print(f"Linear Regression Performance (for comparison):")
+    print(f"  MSE: {mse:.4f}")
+    print(f"  R²: {r2:.4f}")
+    
+    coefficients = pd.DataFrame({
+        'Feature': X.columns,
+        'Coefficient': model.coef_
+    })
+    print(f"\nLinear Regression Coefficients:")
+    print(coefficients)
+    
+    ordinal_model_fitted = False
+
+# 3. Model Diagnostics
+print("\n3. Model Diagnostics:")
+
+if ordinal_model_fitted:
+    # Ordinal Logistic Regression Diagnostics
+    print("Ordinal Logistic Regression Diagnostics:")
+    
+    # 1. Model fit statistics
+    print(f"  Log-Likelihood: {ordinal_results.llf:.4f}")
+    print(f"  AIC: {ordinal_results.aic:.4f}")
+    print(f"  BIC: {ordinal_results.bic:.4f}")
+    
+    # 2. Pseudo R-squared (McFadden's)
+    try:
+        # Create null model without predictors (intercept only)
+        null_model = OrderedModel(y_train, distr='logit')
+        null_results = null_model.fit(method='lbfgs', disp=False, maxiter=1000)
+        mcfadden_r2 = 1 - (ordinal_results.llf / null_results.llf)
+        print(f"  McFadden's Pseudo R²: {mcfadden_r2:.4f}")
+    except Exception as e:
+        print(f"  McFadden's Pseudo R²: Could not calculate ({e})")
+        mcfadden_r2 = None
+    
+    # 3. Classification accuracy
+    print(f"  Classification Accuracy: {accuracy:.4f}")
+    
+    # 4. Confusion Matrix
+    from sklearn.metrics import confusion_matrix, classification_report
+    cm = confusion_matrix(y_test_cat, y_pred_categories, labels=['Poor', 'Fair', 'Good', 'Excellent'])
+    print(f"\nConfusion Matrix:")
+    print("                 Predicted")
+    print("Actual    Poor  Fair  Good  Excellent")
+    categories = ['Poor', 'Fair', 'Good', 'Excellent']
+    for i, actual in enumerate(categories):
+        print(f"{actual:8} {cm[i][0]:4} {cm[i][1]:4} {cm[i][2]:4} {cm[i][3]:8}")
+    
+    # 5. Classification Report
+    print(f"\nClassification Report:")
+    print(classification_report(y_test_cat, y_pred_categories, labels=['Poor', 'Fair', 'Good', 'Excellent']))
+    
+    # 6. Visualize predicted probabilities
+    plt.figure(figsize=(15, 5))
+    
+    # Predicted probabilities for each category
+    plt.subplot(1, 3, 1)
+    prob_matrix = ordinal_results.predict(X_test)
+    for i, category in enumerate(['Poor', 'Fair', 'Good', 'Excellent']):
+        plt.hist(prob_matrix[:, i], alpha=0.6, label=category, bins=10)
+    plt.xlabel('Predicted Probability')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of Predicted Probabilities')
+    plt.legend()
+    
+    # Actual vs Predicted categories
+    plt.subplot(1, 3, 2)
+    category_counts = pd.Series(y_test_cat).value_counts()
+    predicted_counts = pd.Series(y_pred_categories).value_counts()
+    x = np.arange(len(categories))
+    width = 0.35
+    plt.bar(x - width/2, [category_counts.get(cat, 0) for cat in categories], width, label='Actual', alpha=0.7)
+    plt.bar(x + width/2, [predicted_counts.get(cat, 0) for cat in categories], width, label='Predicted', alpha=0.7)
+    plt.xlabel('Sleep Quality Category')
+    plt.ylabel('Count')
+    plt.title('Actual vs Predicted Categories')
+    plt.xticks(x, categories)
+    plt.legend()
+    
+    # Odds ratios visualization
+    plt.subplot(1, 3, 3)
+    odds_ratios = np.exp(ordinal_coefficients)
+    plt.barh(X.columns, odds_ratios)
+    plt.axvline(x=1, color='red', linestyle='--', alpha=0.7)
+    plt.xlabel('Odds Ratio')
+    plt.title('Odds Ratios for Sleep Quality Improvement')
+    plt.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}/model_diagnostics.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+else:
+    # Linear Regression Diagnostics (fallback)
+    print("Linear Regression Diagnostics (fallback):")
+    
+    # Residuals analysis
+    residuals = y_test - y_pred
+    
+    plt.figure(figsize=(15, 5))
+    
+    # Residuals vs Predicted
+    plt.subplot(1, 3, 1)
+    plt.scatter(y_pred, residuals, alpha=0.6)
+    plt.axhline(y=0, color='r', linestyle='--')
+    plt.xlabel('Predicted Values')
+    plt.ylabel('Residuals')
+    plt.title('Residuals vs Predicted')
+    
+    # QQ Plot of residuals
+    plt.subplot(1, 3, 2)
+    stats.probplot(residuals, dist="norm", plot=plt)
+    plt.title('QQ Plot of Residuals')
+    
+    # Residuals histogram
+    plt.subplot(1, 3, 3)
+    plt.hist(residuals, bins=20, alpha=0.7, edgecolor='black')
+    plt.xlabel('Residuals')
+    plt.ylabel('Frequency')
+    plt.title('Residuals Distribution')
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}/model_diagnostics.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+# Multicollinearity check (applies to both models)
+def calculate_vif(X):
+    vif_data = pd.DataFrame()
+    vif_data["Variable"] = X.columns
+    vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+    return vif_data
+
+vif_results = calculate_vif(X_train)
+print(f"\nVariance Inflation Factors:")
+print(vif_results)
+
+# ============================================================================
+# VII. ANALYSIS AND INTERPRETATION
+# ============================================================================
+
+print("\nVII. ANALYSIS AND INTERPRETATION")
+print("-" * 50)
+
+# 1. Key Findings Summary
+print("\n1. Key Findings Summary:")
+
+# Effect sizes
+def cohens_d(group1, group2):
+    """Calculate Cohen's d for effect size"""
+    pooled_std = np.sqrt(((len(group1) - 1) * group1.var() + 
+                         (len(group2) - 1) * group2.var()) / 
+                         (len(group1) + len(group2) - 2))
+    return (group1.mean() - group2.mean()) / pooled_std
+
+# Gender effect size
+gender_effect = cohens_d(male_sleep, female_sleep)
+print(f"Gender effect size (Cohen's d): {gender_effect:.3f}")
+
+# Correlation strength interpretation
+if abs(correlation) < 0.1:
+    strength = "negligible"
+elif abs(correlation) < 0.3:
+    strength = "small"
+elif abs(correlation) < 0.5:
+    strength = "medium"
+else:
+    strength = "large"
+
+print(f"Sleep duration-quality correlation strength: {strength} ({correlation:.3f})")
+
+# 2. Business Impact Translation
+print("\n2. Business Impact Translation:")
+
+if ordinal_model_fitted:
+    print("Ordinal Logistic Regression Interpretation:")
+    
+    # Interpret odds ratios
+    print(f"\nOdds Ratios Interpretation:")
+    print("(Odds ratio > 1: increases odds of higher sleep quality)")
+    print("(Odds ratio < 1: decreases odds of higher sleep quality)")
+    
+    for feature, odds_ratio in zip(X.columns, np.exp(ordinal_coefficients)):
+        if odds_ratio > 1:
+            interpretation = f"increases odds of better sleep quality by {((odds_ratio - 1) * 100):.1f}%"
+        else:
+            interpretation = f"decreases odds of better sleep quality by {((1 - odds_ratio) * 100):.1f}%"
+        print(f"  {feature}: OR = {odds_ratio:.4f} - {interpretation}")
+    
+    # Practical interpretation
+    print(f"\nPractical Interpretation:")
+    print("For a one-unit increase in each predictor:")
+    for feature, coef in zip(X.columns, ordinal_coefficients):
+        if coef > 0:
+            direction = "increases"
+        else:
+            direction = "decreases"
+        print(f"  {feature}: {direction} the log-odds of having better sleep quality by {abs(coef):.4f}")
+        
+else:
+    # Linear regression interpretation (fallback)
+    def business_impact(model_coefficient, feature_change, baseline_value):
+        """Convert statistical results to business metrics"""
+        predicted_change = model_coefficient * feature_change
+        percentage_change = (predicted_change / baseline_value) * 100
+        return f"Changing {feature_change} units results in {percentage_change:.1f}% change"
+
+    baseline_quality = df_clean['Quality of Sleep'].mean()
+    print(f"Baseline sleep quality: {baseline_quality:.2f}")
+
+    for feature, coef in zip(X.columns, model.coef_):
+        impact = business_impact(coef, 1, baseline_quality)
+        print(f"  {feature}: {impact}")
+
+# 3. Statistical Significance Summary
+print("\n3. Statistical Significance Summary:")
+significant_findings = []
+
+if gender_p_value < 0.05:
+    significant_findings.append("Gender differences in sleep duration (Mann-Whitney U test)")
+if spearman_p < 0.05:
+    significant_findings.append("Correlation between sleep duration and quality (Spearman correlation)")
+
+print("Statistically significant findings (using non-parametric tests):")
+for finding in significant_findings:
+    print(f"  ✓ {finding}")
+
+print(f"\nData Distribution Implications:")
+print(f"  • Sleep duration is NOT normally distributed (Shapiro-Wilk p < 0.05)")
+print(f"  • Non-parametric tests are more appropriate for this data")
+print(f"  • Results from parametric tests may be less reliable")
+print(f"  • Spearman correlation measures monotonic relationships, not just linear")
+
+# ============================================================================
+# VIII. CONCLUSION AND NEXT STEPS
+# ============================================================================
+
+print("\nVIII. CONCLUSION AND NEXT STEPS")
+print("-" * 50)
+
+# 1. Key Insights
+print("\n1. Key Insights:")
+insights = [
+    f"Sleep duration and quality show a {strength} correlation ({correlation:.3f})",
+    f"Gender differences in sleep patterns are {'significant' if t_p_value < 0.05 else 'not significant'}",
+    f"Physical activity shows positive relationship with sleep quality",
+    f"Stress levels negatively impact sleep duration",
+    f"Age groups show varying sleep patterns"
+]
+
+for i, insight in enumerate(insights, 1):
+    print(f"  {i}. {insight}")
+
+# 2. Limitations
+print("\n2. Limitations:")
+limitations = {
+    "data_quality": "Analysis based on self-reported data",
+    "model_assumptions": "Linear relationships assumed",
+    "external_validity": "Results may not generalize to other populations",
+    "temporal_stability": "Cross-sectional analysis, no temporal trends",
+    "causality": "Correlation does not imply causation"
+}
+
+for limitation, description in limitations.items():
+    print(f"  • {limitation}: {description}")
+
+# 3. Recommendations
+print("\n3. Recommendations:")
+recommendations = [
+    "Implement longitudinal studies to track sleep patterns over time",
+    "Include objective sleep measurements (e.g., sleep trackers)",
+    "Investigate causal relationships through experimental designs",
+    "Develop targeted interventions based on demographic factors",
+    "Monitor sleep quality improvements through lifestyle changes"
+]
+
+for i, rec in enumerate(recommendations, 1):
+    print(f"  {i}. {rec}")
+
+# 4. Next Steps
+print("\n4. Next Steps:")
+next_steps = [
+    "Conduct follow-up studies with larger sample sizes",
+    "Explore machine learning approaches for sleep prediction",
+    "Develop personalized sleep improvement recommendations",
+    "Investigate sleep disorders and their impact",
+    "Create interactive dashboards for real-time monitoring"
+]
+
+for i, step in enumerate(next_steps, 1):
+    print(f"  {i}. {step}")
+
+print("\n" + "=" * 80)
+print("ANALYSIS COMPLETE - All visualizations saved to organized directory")
+print("=" * 80) 

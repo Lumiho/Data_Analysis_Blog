@@ -1,0 +1,335 @@
+---
+title: "Social Media Usage Analysis: Understanding Digital Behavior Patterns"
+date: "2025-07-20"
+summary: "An in-depth analysis of social media usage patterns and user engagement across multiple platforms, following professional data analysis frameworks with statistical modeling and interpretation."
+author: "Leonardo Zavala-Jimenez"
+readingTime: "15"
+tags: ["social-media", "user-behavior", "digital-analytics", "python", "statistics", "professional-analysis"]
+draft: true
+---
+
+# Social Media Usage Analysis: Understanding Digital Behavior Patterns
+
+**Introduction:** This analysis explores social media usage patterns and user engagement across multiple platforms using a dataset of 1,000 users across seven popular social media platforms. Following professional data analysis frameworks, this study systematically examines daily usage time, posting behavior, engagement metrics, and platform preferences through rigorous statistical methods.
+
+Dataset Source: Social Media Usage Dataset (1,000 users across Facebook, Instagram, Twitter, Snapchat, TikTok, LinkedIn, and Pinterest) by Bhadra Mohit
+
+## Table of Contents
+
+---
+
+### Title
+
+- [I Introduction and Goal Definition](#i-introduction-and-goal-definition)
+- [II Data Cleaning and Preparation](#ii-data-cleaning-and-preparation)
+- [III Exploratory Data Analysis (EDA)](#iii-exploratory-data-analysis-eda)
+- [IV Data Manipulation and Feature Engineering](#iv-data-manipulation-and-feature-engineering)
+- [V Statistical Analysis and Modeling](#v-statistical-analysis-and-modeling)
+- [VI Analysis and Interpretation](#vi-analysis-and-interpretation)
+- [VII Key Insights](#vii-key-insights)
+- [VIII Limitations and Assumptions](#viii-limitations-and-assumptions)
+- [Recommendations and Next Steps](#recommendations-and-next-steps)
+- [Conclusion](#conclusion)
+
+---
+
+### I. Goal Definition
+
+**Primary Research Question:** What factors most significantly influence social media engagement and usage patterns?
+
+**Secondary Questions:**
+- How do different platforms vary in user engagement metrics?
+- Are there significant differences in posting behavior across platforms?
+- What is the relationship between time spent and engagement received?
+
+**Success Metrics:** Statistical significance, interpretability, and actionability of findings.
+
+---
+
+### II. Data Cleaning and Preparation
+
+The analysis began with comprehensive data quality assessment:
+
+1. **Missing Value Analysis:** Identified and documented any missing data points
+2. **Data Type Validation:** Ensured proper data types for categorical and numerical variables
+3. **Outlier Detection:** Used IQR method to identify and handle outliers systematically
+4. **Data Consistency Checks:** Verified logical ranges for all variables
+
+**Dataset Overview:**
+- **User_ID:** Unique identifier for each user
+- **App:** The social media platform being used (Facebook, Instagram, Twitter, Snapchat, TikTok, LinkedIn, Pinterest)
+- **Daily_Minutes_Spent:** Total time a user spends on the app each day (5-500 minutes)
+- **Posts_Per_Day:** Number of posts a user creates per day (0-20)
+- **Likes_Per_Day:** Total number of likes a user receives on their posts each day (0-200)
+- **Follows_Per_Day:** The number of new followers a user gains daily (0-50)
+
+---
+
+### III. Exploratory Data Analysis (EDA)
+
+**Industry Alignment:** EDA is essential in practice. Clear visuals and summaries help identify data quality issues, inform modeling, and communicate to stakeholders.
+
+**Key Components:**
+
+1. **Descriptive Statistics**
+   ```python
+   # Basic statistics
+   summary_stats = df.describe()
+   
+   # Distribution analysis
+   import matplotlib.pyplot as plt
+   import seaborn as sns
+   
+   plt.figure(figsize=(12, 4))
+   plt.subplot(1, 2, 1)
+   df['Daily_Minutes_Spent'].hist()
+   plt.title('Distribution of Daily Minutes Spent')
+   
+   plt.subplot(1, 2, 2)
+   sns.boxplot(y=df['Daily_Minutes_Spent'])
+   plt.title('Box Plot - Usage Time Outlier Detection')
+   ```
+
+2. **Correlation Analysis**
+   ```python
+   # Correlation matrix
+   correlation_matrix = df.corr()
+   sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
+   ```
+
+3. **Platform Comparison**
+   ```python
+   # Platform usage patterns
+   platform_usage = df.groupby('App')['Daily_Minutes_Spent'].mean().sort_values(ascending=False)
+   
+   plt.figure(figsize=(10, 6))
+   platform_usage.plot(kind='bar')
+   plt.title('Average Daily Usage by Platform')
+   plt.xlabel('Platform')
+   plt.ylabel('Average Minutes Spent')
+   plt.xticks(rotation=45)
+   ```
+
+4. **Engagement Patterns**
+   ```python
+   # Scatter plot of time spent vs engagement
+   plt.scatter(df['Daily_Minutes_Spent'], df['Likes_Per_Day'])
+   plt.xlabel('Daily Minutes Spent')
+   plt.ylabel('Likes Per Day')
+   plt.title('Time Spent vs Engagement Relationship')
+   ```
+
+**Interpretation:** Show analytical thinking beyond just running code by explaining what patterns mean and their business implications.
+
+---
+
+### IV. Data Manipulation and Feature Engineering
+
+**Industry Alignment:** Data manipulation is crucial for extracting meaningful insights from social media data. Creating derived features often reveals patterns that raw engagement metrics don't show, and filtering helps focus analysis on relevant user segments.
+
+**Key Components:**
+
+1. **Creating New Variables**
+   ```python
+   # Engagement rate calculation
+   df['engagement_rate'] = (df['Likes_Per_Day'] + df['Follows_Per_Day']) / df['Posts_Per_Day'].replace(0, 1)
+   
+   # Usage intensity categories
+   df['usage_intensity'] = pd.cut(df['Daily_Minutes_Spent'], 
+                                 bins=[0, 30, 60, 120, 500], 
+                                 labels=['Light', 'Moderate', 'Heavy', 'Very Heavy'])
+   
+   # Platform type classification
+   df['platform_type'] = df['App'].map({
+       'Facebook': 'Social Network',
+       'Instagram': 'Visual Social',
+       'Twitter': 'Microblogging',
+       'Snapchat': 'Ephemeral',
+       'TikTok': 'Short-form Video',
+       'LinkedIn': 'Professional',
+       'Pinterest': 'Visual Discovery'
+   })
+   
+   # Productivity metrics
+   df['likes_per_minute'] = df['Likes_Per_Day'] / df['Daily_Minutes_Spent']
+   df['posts_per_hour'] = df['Posts_Per_Day'] * 60 / df['Daily_Minutes_Spent']
+   ```
+
+2. **Data Filtering and Subsetting**
+   ```python
+   # Active users only
+   active_users = df[df['Posts_Per_Day'] > 0]
+   
+   # High engagement users
+   high_engagement = df[df['engagement_rate'] > df['engagement_rate'].quantile(0.8)]
+   
+   # Platform-specific analysis
+   visual_platforms = df[df['platform_type'].isin(['Visual Social', 'Visual Discovery'])]
+   professional_platforms = df[df['platform_type'] == 'Professional']
+   
+   # Usage patterns by intensity
+   heavy_users = df[df['usage_intensity'].isin(['Heavy', 'Very Heavy'])]
+   ```
+
+3. **Aggregation and Summary Statistics**
+   ```python
+   # Platform performance metrics
+   platform_metrics = df.groupby('App').agg({
+       'Daily_Minutes_Spent': ['mean', 'std', 'count'],
+       'engagement_rate': 'mean',
+       'Posts_Per_Day': 'mean',
+       'Likes_Per_Day': 'mean'
+   }).round(2)
+   
+   # Usage intensity analysis
+   intensity_analysis = df.groupby('usage_intensity').agg({
+       'engagement_rate': ['mean', 'std'],
+       'Posts_Per_Day': 'mean',
+       'Daily_Minutes_Spent': 'mean'
+   })
+   ```
+
+4. **Data Reshaping for Analysis**
+   ```python
+   # Pivot table for platform comparison
+   platform_comparison = df.pivot_table(
+       values=['Daily_Minutes_Spent', 'engagement_rate', 'Posts_Per_Day'],
+       index='App',
+       aggfunc='mean'
+   )
+   
+   # User behavior matrix
+   user_behavior = df.pivot_table(
+       values='Daily_Minutes_Spent',
+       index='User_ID',
+       columns='App',
+       aggfunc='sum',
+       fill_value=0
+   )
+   ```
+
+### Exploratory Analysis on Transformed Data
+
+**Industry Alignment:** Analyzing transformed social media data reveals insights about user behavior patterns, platform effectiveness, and engagement strategies that aren't apparent in raw metrics.
+
+**Transformation Analysis:**
+
+1. **Engagement Rate Distribution**
+   ```python
+   # Analyze engagement rate patterns
+   plt.figure(figsize=(12, 4))
+   
+   plt.subplot(1, 2, 1)
+   df['engagement_rate'].hist(bins=30)
+   plt.title('Distribution of Engagement Rate')
+   plt.xlabel('Engagement Rate')
+   
+   plt.subplot(1, 2, 2)
+   df.boxplot(column='engagement_rate', by='platform_type')
+   plt.title('Engagement Rate by Platform Type')
+   plt.suptitle('')
+   ```
+
+2. **Usage Intensity Analysis**
+   ```python
+   # Usage patterns by intensity level
+   intensity_engagement = df.groupby('usage_intensity')['engagement_rate'].mean()
+   
+   plt.figure(figsize=(10, 6))
+   intensity_engagement.plot(kind='bar')
+   plt.title('Average Engagement Rate by Usage Intensity')
+   plt.xlabel('Usage Intensity')
+   plt.ylabel('Average Engagement Rate')
+   plt.xticks(rotation=45)
+   ```
+
+3. **Platform Performance Comparison**
+   ```python
+   # Platform effectiveness analysis
+   platform_effectiveness = df.groupby('App').agg({
+       'engagement_rate': 'mean',
+       'likes_per_minute': 'mean',
+       'posts_per_hour': 'mean'
+   }).round(3)
+   
+   # Visualize platform performance
+   plt.figure(figsize=(12, 8))
+   sns.heatmap(platform_effectiveness, annot=True, cmap='YlOrRd')
+   plt.title('Platform Performance Heatmap')
+   ```
+
+**Quality Checks for Transformed Data:**
+```python
+# Validate social media transformations
+def validate_social_media_transformations(df):
+    """
+    Quality checks for social media data transformations
+    """
+    checks = {}
+    
+    # Check for infinite engagement rates
+    checks['infinite_engagement'] = np.isinf(df['engagement_rate']).sum()
+    
+    # Check for negative values
+    checks['negative_metrics'] = (df[['likes_per_minute', 'posts_per_hour']] < 0).sum().sum()
+    
+    # Check for unreasonable engagement rates
+    checks['unusual_engagement'] = (df['engagement_rate'] > df['engagement_rate'].quantile(0.99)).sum()
+    
+    # Check for missing platform classifications
+    checks['missing_platform_type'] = df['platform_type'].isnull().sum()
+    
+    return checks
+
+transformation_checks = validate_social_media_transformations(df)
+print("=== Social Media Transformation Quality Checks ===")
+for check, result in transformation_checks.items():
+    print(f"{check}: {result}")
+```
+
+**Best Practices:**
+- **Engagement rate calculation:** Handle zero posts appropriately to avoid division by zero
+- **Platform categorization:** Use consistent classification schemes
+- **Usage intensity bins:** Align with industry standards for social media usage
+- **Data validation:** Check for logical inconsistencies in derived metrics
+- **Business context:** Ensure transformations align with social media marketing objectives
+
+---
+
+### V. Statistical Analysis and Modeling
+
+[Content to be filled in with statistical tests and modeling]
+
+---
+
+### V. Statistical Analysis and Modeling
+
+[Content to be filled in with statistical tests and modeling]
+
+---
+
+### VI. Analysis and Interpretation
+
+[Content to be filled in with key findings and interpretation]
+
+---
+
+### VII. Key Insights
+
+[Content to be filled in with main insights]
+
+---
+
+### VIII. Limitations and Assumptions
+
+[Content to be filled in with limitations]
+
+## Recommendations and Next Steps
+
+[Content to be filled in with recommendations]
+
+---
+
+## Conclusion
+
+[Content to be filled in with conclusion] 

@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom horizontal rule styling */
+hr {
+  border: none;
+  height: 3px;
+  background: linear-gradient(to right, transparent, #B8860B, transparent);
+  margin: 2rem 0;
+  border-radius: 2px;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+}
+
+/* Darker horizontal rule for better visibility */
+hr.dark-divider {
+  background: linear-gradient(to right, transparent, #333, transparent);
+  height: 4px;
+}
+
+.pattern-overlay {
+  background-image: 
+    linear-gradient(30deg, rgba(255, 255, 255, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(255, 255, 255, 0.05) 87.5%, rgba(255, 255, 255, 0.05)),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(255, 255, 255, 0.05) 87.5%, rgba(255, 255, 255, 0.05)),
+    linear-gradient(30deg, rgba(255, 255, 255, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(255, 255, 255, 0.05) 87.5%, rgba(255, 255, 255, 0.05)),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(255, 255, 255, 0.05) 87.5%, rgba(255, 255, 255, 0.05));
+  background-size: 80px 140px;
+  background-position: 0 0, 0 0, 40px 70px, 40px 70px;
+  background-color: transparent;
+}
+
+/* Section background styles */
+.section-gold {
+  background-color: rgba(184, 134, 11, 0.15);
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border-bottom: 3px solid #B8860B;
+}
+
+.section-white {
+  background-color: #FFFFFF;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border: 1px solid #E5E5E5;
+  border-bottom: 3px solid #B8860B;
+}
+
+/* Reduce spacing between list items */
+.prose ul li,
+.prose ol li {
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+.prose ul li:last-child,
+.prose ol li:last-child {
+  margin-bottom: 0;
+}
