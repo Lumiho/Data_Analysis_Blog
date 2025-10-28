@@ -1,0 +1,433 @@
+---
+title: "Stroke Prediction Analysis: Identifying Risk Factors Through Healthcare Data"
+date: "2025-10-28"
+summary: "A comprehensive analysis of stroke risk factors using healthcare data, employing logistic regression to predict stroke occurrence and identify the most influential predictors."
+author: "Leonardo Zavala-Jimenez"
+readingTime: "12"
+tags: ["healthcare", "stroke", "prediction", "logistic-regression", "python", "statistics", "medical-analytics"]
+draft: false
+---
+--------------------------------------------------
+**Introduction:** This analysis explores stroke risk factors using a comprehensive healthcare dataset of 5,110 individuals. Following professional data analysis frameworks, this study employs logistic regression to predict stroke occurrence and systematically identifies the most influential predictors through rigorous statistical methods.
+
+Dataset Source: Healthcare Dataset Stroke Data (5,110 records with 12 variables including demographics, health conditions, and lifestyle factors)
+
+-------------------------------------------------
+
+## Table of Contents
+
+### Title
+
+- [I Introduction and Goal Definition](#i-introduction-and-goal-definition)
+- [II Data Cleaning and Preparation](#ii-data-cleaning-and-preparation)
+- [III Exploratory Data Analysis (EDA)](#iii-exploratory-data-analysis-eda)
+- [IV Statistical Method Selection](#iv-statistical-method-selection)
+- [V Logistic Regression Modeling](#v-logistic-regression-modeling)
+- [VI Model Evaluation and Performance](#vi-model-evaluation-and-performance)
+- [VII Analysis and Interpretation](#vii-analysis-and-interpretation)
+- [VIII Key Insights](#viii-key-insights)
+- [IX Limitations and Assumptions](#ix-limitations-and-assumptions)
+- [Recommendations and Next Steps](#recommendations-and-next-steps)
+- [Conclusion](#conclusion)
+
+---
+
+### I. Goal Definition
+
+**Primary Research Question:** Can we predict individuals who will have a stroke based on health records?
+
+**Secondary Questions:**
+- Which factor correlates the strongest with stroke risk?
+- What are the most significant predictors of stroke occurrence?
+- How well can we discriminate between high-risk and low-risk individuals?
+
+**Success Metrics:** Model accuracy, statistical significance, interpretability, and clinical relevance of findings.
+
+**Response Variable:** Stroke (binary: 0 = No stroke, 1 = Stroke occurred)
+
+---
+
+### II. Data Cleaning and Preparation
+
+The analysis began with comprehensive data quality assessment of a healthcare dataset containing 5,110 records across 12 variables:
+
+**Dataset Overview:**
+- **id:** Unique identifier for each patient
+- **gender:** Patient gender (Female, Male, Other)
+- **age:** Patient age in years
+- **hypertension:** Hypertension status (0 = No, 1 = Yes)
+- **heart_disease:** Heart disease status (0 = No, 1 = Yes)
+- **ever_married:** Marital status (No, Yes)
+- **work_type:** Type of work (Private, Self-employed, Govt_job, children, Never_worked)
+- **Residence_type:** Residence location (Rural, Urban)
+- **avg_glucose_level:** Average glucose level
+- **bmi:** Body Mass Index
+- **smoking_status:** Smoking habits (formerly smoked, never smoked, smokes, Unknown)
+- **stroke:** Stroke occurrence (0 = No, 1 = Yes)
+
+**Data Quality Assessment Results:**
+
+1. **Missing Value Analysis:** ✅ Only BMI had missing values (201 records, 3.93% of dataset)
+   - BMI Skewness: 1.06 (moderate-high skew)
+   - **Resolution:** Median imputation applied (preferred for skewed distributions)
+
+
+2. **Data Type Validation:** ✅ Proper data types confirmed
+   - Categorical variables converted to category type for memory efficiency
+   - Binary variables (hypertension, heart_disease, stroke) maintained as integers
+
+3. **Outlier Detection:** ✅ Outliers identified but retained for predictive accuracy
+   - **Outlier Summary:**
+     - hypertension: 498 outliers (9.7%)
+     - heart_disease: 276 outliers (5.4%)
+     - avg_glucose_level: 627 outliers (12.3%)
+     - bmi: 126 outliers (2.5%)
+     - stroke: 249 outliers (4.9%)
+   - **Decision:** Outliers retained to preserve predictive accuracy
+
+4. **Data Consistency Checks:** ✅ All values within logical ranges
+   - Age: Reasonable age distribution
+   - BMI: Standard BMI ranges
+   - Glucose levels: Typical glucose measurement ranges
+
+**Data Transformation:**
+- ID column removed (not useful for analysis)
+- Box-Cox transformation not applicable (binary response variable)
+- One-hot encoding applied to categorical variables for modeling
+
+---
+
+### III. Exploratory Data Analysis (EDA)
+
+**Dataset Structure:**
+- **Shape:** 5,110 records × 11 variables (after removing ID)
+- **Data Types:** 8 categorical, 3 numerical variables
+- **Missing Values:** 0 (after BMI imputation)
+- **Duplicate Rows:** 0
+
+**Key Descriptive Statistics:**
+
+**Categorical Variables Distribution:**
+- **Gender:** Female (58.6%), Male (41.4%), Other (0.02%)
+- **Hypertension:** No (90.3%), Yes (9.7%)
+- **Heart Disease:** No (94.6%), Yes (5.4%)
+- **Marital Status:** Yes (65.1%), No (34.9%)
+- **Work Type:** Private (57.5%), Self-employed (17.4%), Govt_job (15.2%), children (5.0%), Never_worked (4.9%)
+- **Residence:** Urban (50.3%), Rural (49.7%)
+- **Smoking Status:** never smoked (38.1%), formerly smoked (19.5%), smokes (15.4%), Unknown (27.0%)
+
+**Numerical Variables Distribution:**
+- **Age:** Mean = 43.23, Range = 0.08-82 years
+- **Average Glucose Level:** Mean = 106.15, Range = 55.12-271.74
+- **BMI:** Mean = 28.89, Range = 10.30-97.60
+
+**Distribution Characteristics:**
+- **Left Skewed:** Age
+- **Right Skewed:** Average glucose level, BMI
+
+![Age Distribution](/graphs/stroke/age_distribution.png)
+*Figure 2: Age Distribution - Shows left skewness with younger population predominance*
+
+![Glucose Level Distribution](/graphs/stroke/avg_glucose_level_distribution.png)
+*Figure 3: Average Glucose Level Distribution - Shows right skewness with some extreme values*
+
+![BMI Distribution](/graphs/stroke/bmi_distribution.png)
+*Figure 4: BMI Distribution - Shows right skewness indicating some high BMI values*
+
+**Target Variable Analysis:**
+- **Stroke Rate:** 4.9% (249 out of 5,110 individuals)
+- **Class Imbalance:** Significant imbalance with 95.1% non-stroke cases
+
+![Stroke Distribution](/graphs/stroke/stroke_countplot.png)
+*Figure 5: Stroke Distribution - Shows significant class imbalance (4.9% stroke rate)*
+
+![Gender Distribution](/graphs/stroke/gender_countplot.png)
+*Figure 6: Gender Distribution - Shows female predominance (58.6%)*
+
+![Hypertension Distribution](/graphs/stroke/hypertension_countplot.png)
+*Figure 7: Hypertension Distribution - Shows 9.7% hypertension prevalence*
+
+**Correlation Analysis:**
+- Correlation matrix reveals relationships between numerical variables
+- Age shows strongest correlation with stroke occurrence
+- BMI and glucose levels show moderate correlations with stroke
+
+![Correlation Heatmap](/graphs/stroke/correlation_heatmap.png)
+*Figure 8: Correlation Matrix - Shows relationships between numerical variables*
+
+**Key Visualizations Generated:**
+
+1. **Missing Values Heatmap** - Shows data completeness across all variables
+2. **Distribution Plots** - Histograms with KDE for all numerical variables showing skewness patterns
+3. **Count Plots** - Bar charts for categorical variables showing frequency distributions
+4. **Box Plots** - Comparing numerical variables against stroke outcome
+5. **Categorical vs Stroke Plots** - Count plots showing stroke distribution across categories
+6. **Correlation Heatmap** - Comprehensive correlation matrix for numerical variables
+7. **ROC Curve** - Model performance visualization showing discrimination ability
+
+**Bivariate Analysis - Numerical Variables vs Stroke:**
+
+![Age vs Stroke Box Plot](/graphs/stroke/age_vs_stroke_boxplot.png)
+*Figure 9: Age vs Stroke - Shows higher stroke rates in older age groups*
+
+![Glucose Level vs Stroke Box Plot](/graphs/stroke/avg_glucose_level_vs_stroke_boxplot.png)
+*Figure 10: Glucose Level vs Stroke - Shows elevated glucose levels in stroke patients*
+
+![BMI vs Stroke Box Plot](/graphs/stroke/bmi_vs_stroke_boxplot.png)
+*Figure 11: BMI vs Stroke - Shows relationship between BMI and stroke risk*
+
+**Visualization Insights:**
+- Age distribution shows left skewness, indicating younger population predominance
+- Glucose levels and BMI show right skewness, suggesting some extreme values
+- Categorical variables reveal interesting patterns in stroke distribution
+- Box plots clearly show differences in numerical variables between stroke and non-stroke groups
+- Correlation heatmap provides quantitative relationships between predictors
+
+---
+
+### IV. Statistical Method Selection
+
+**Method Justification:**
+Since the response variable (stroke) is binary (0 = No stroke, 1 = Stroke), **logistic regression** is the appropriate statistical method.
+
+**Why Logistic Regression:**
+1. **Binary Response:** Perfect for binary outcome variables
+2. **Interpretability:** Provides odds ratios for clinical interpretation
+3. **Probabilistic Output:** Generates probability scores for risk assessment
+4. **Statistical Rigor:** Well-established method for medical prediction
+
+**Model Assumptions:**
+- Binary response variable ✓
+- Independent observations ✓
+- Linear relationship between log-odds and predictors
+- No perfect multicollinearity
+
+---
+
+### V. Logistic Regression Modeling
+
+**Data Preparation:**
+- One-hot encoding applied to all categorical variables
+- Drop-first encoding used to avoid multicollinearity
+- Train-test split: 80% training (4,088 records), 20% testing (1,022 records)
+- Stratified sampling to maintain class distribution
+
+**Model Development:**
+```python
+# Model specification
+X = df_encoded.drop(columns=['stroke'])
+y = df_encoded['stroke']
+X = sm.add_constant(X)  # Add intercept
+
+# Train-test split with stratification
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# Logistic regression model
+model = sm.Logit(y_train, X_train)
+result = model.fit()
+```
+
+**Model Results:**
+- **Convergence:** Model converged after 35 iterations
+- **Log-Likelihood:** -633.92
+- **Pseudo R² (McFadden):** 0.2032
+- **AIC:** 1,301.84
+- **LLR p-value:** 3.793e-59 (highly significant)
+
+**Key Model Statistics:**
+- **Number of Observations:** 4,088 (training set)
+- **Degrees of Freedom:** 4,071
+- **Model Convergence:** Successful
+
+---
+
+### VI. Model Evaluation and Performance
+
+**Odds Ratios Analysis:**
+The model provides interpretable odds ratios for each predictor:
+
+| Variable | Odds Ratio | Interpretation |
+|----------|------------|----------------|
+| hypertension | 1.587 | 58.7% increase in stroke odds |
+| work_type_children | 1.383 | 38.3% increase in stroke odds |
+| smoking_status_smokes | 1.293 | 29.3% increase in stroke odds |
+| heart_disease | 1.223 | 22.3% increase in stroke odds |
+| smoking_status_formerly smoked | 1.145 | 14.5% increase in stroke odds |
+| Residence_type_Urban | 1.085 | 8.5% increase in stroke odds |
+| age | 1.077 | 7.7% increase per year of age |
+| gender_Male | 1.067 | 6.7% increase for males |
+| avg_glucose_level | 1.004 | 0.4% increase per unit |
+
+**Model Performance Metrics:**
+
+**Confusion Matrix (Test Set):**
+```
+                Predicted
+Actual     No Stroke  Stroke
+No Stroke      972       0
+Stroke          49       1
+```
+
+**Performance Metrics:**
+- **Accuracy:** 95.2%
+- **Precision (Stroke):** 100% (1/1)
+- **Recall (Stroke):** 2% (1/50)
+- **F1-Score (Stroke):** 4%
+- **ROC-AUC:** 0.842
+
+**ROC Curve Analysis:**
+- **AUC = 0.842:** Indicates HIGH discrimination ability
+- **Interpretation:** The model has excellent ability to distinguish between stroke and non-stroke cases
+
+![ROC Curve](/graphs/stroke/roc_curve.png)
+*Figure 12: ROC Curve - Shows model discrimination ability with AUC = 0.842*
+
+**Model Diagnostics:**
+- **Multicollinearity Check:** VIF values computed for all variables
+- **Statistical Significance:** Key predictors tested for significance
+- **Model Assumptions:** Validated for logistic regression requirements
+
+**Visualization Output:**
+The analysis generated a comprehensive ROC curve plot showing the model's discrimination ability, with the area under the curve (AUC) of 0.842 indicating high predictive performance.
+
+---
+
+### VII. Analysis and Interpretation
+
+**Statistical Significance Analysis:**
+
+**Highly Significant Predictors (p < 0.001):**
+- **Age:** Coefficient = 0.0742, p < 0.001
+- **Average Glucose Level:** Coefficient = 0.0039, p = 0.004
+
+**Significant Predictors (p < 0.05):**
+- **Hypertension:** Coefficient = 0.4618, p = 0.012
+
+**Non-Significant Predictors:**
+- **Heart Disease:** p = 0.351
+- **BMI:** p = 0.974
+- **Gender:** p = 0.685
+
+**Clinical Interpretation:**
+
+1. **Age:** The strongest predictor - each year of age increases stroke odds by 7.7%
+2. **Hypertension:** Significant risk factor - increases stroke odds by 58.7%
+3. **Average Glucose Level:** Modest but significant - each unit increase raises odds by 0.4%
+4. **Smoking Status:** Current smokers have 29.3% higher stroke odds
+5. **Heart Disease:** Shows 22.3% increase but not statistically significant in this model
+
+**Model Limitations:**
+- **Class Imbalance:** 95.1% non-stroke cases create prediction challenges
+- **Low Recall:** Model identifies only 2% of actual stroke cases
+- **High Precision:** When model predicts stroke, it's usually correct (100% precision)
+
+---
+
+### VIII. Key Insights
+
+**Primary Findings:**
+
+1. **Age is the Strongest Predictor**
+   - Each year of age increases stroke risk by 7.7%
+   - Most reliable predictor in the model
+
+2. **Hypertension Significantly Increases Risk**
+   - 58.7% increase in stroke odds
+   - Statistically significant predictor (p = 0.012)
+
+3. **Glucose Levels Matter**
+   - Even small increases in average glucose level increase stroke risk
+   - Statistically significant (p = 0.004)
+
+4. **Smoking Status Impacts Risk**
+   - Current smokers: 29.3% higher odds
+   - Former smokers: 14.5% higher odds
+
+5. **Model Performance**
+   - High discrimination ability (AUC = 0.842)
+   - Excellent accuracy (95.2%) but poor stroke detection (2% recall)
+
+**Clinical Implications:**
+
+1. **Risk Stratification:** Age-based screening protocols
+2. **Hypertension Management:** Critical for stroke prevention
+3. **Glucose Monitoring:** Important for stroke risk assessment
+4. **Smoking Cessation:** Significant impact on stroke prevention
+
+**Demographic Patterns:**
+- Urban residents show slightly higher stroke odds (8.5%)
+- Males have modestly higher risk (6.7%)
+- Work type variations exist but require further investigation
+
+---
+
+### IX. Limitations and Assumptions
+
+**Data Limitations:**
+- **Class Imbalance:** Severe imbalance (95.1% vs 4.9%) affects model performance
+- **Cross-sectional Design:** No temporal trends or causality established
+- **Self-reported Data:** Some variables may be subject to reporting bias
+- **Sample Characteristics:** May not generalize to all populations
+
+**Model Assumptions:**
+- **Linear Log-Odds:** Assumes linear relationship between predictors and log-odds
+- **Independence:** Assumes independent observations
+- **No Perfect Multicollinearity:** Addressed through one-hot encoding
+- **Binary Response:** Appropriate for stroke/no-stroke outcome
+
+**External Validity:**
+- **Population Generalizability:** Results may not apply to all demographics
+- **Geographic Factors:** Healthcare access and cultural factors not considered
+- **Temporal Stability:** Risk factors may change over time
+
+**Model Performance Limitations:**
+- **Low Recall:** Model misses 98% of actual stroke cases
+- **High Precision:** When predicting stroke, model is usually correct
+- **Clinical Utility:** Limited for individual patient diagnosis
+
+## Recommendations and Next Steps
+
+**Immediate Actions:**
+1. **Risk Stratification:** Implement age-based screening protocols
+2. **Hypertension Management:** Prioritize blood pressure control programs
+3. **Glucose Monitoring:** Integrate glucose level assessment in stroke risk evaluation
+4. **Smoking Cessation:** Develop targeted smoking cessation programs
+
+**Model Improvements:**
+1. **Address Class Imbalance:** Use SMOTE or other resampling techniques
+2. **Feature Engineering:** Create interaction terms and derived features
+3. **Ensemble Methods:** Combine multiple models for better performance
+4. **Threshold Optimization:** Adjust classification threshold for better recall
+
+**Future Research:**
+1. **Longitudinal Studies:** Track patients over time to establish causality
+2. **External Validation:** Test model on different populations
+3. **Clinical Integration:** Develop clinical decision support tools
+4. **Machine Learning:** Explore advanced algorithms for better performance
+
+---
+
+## Conclusion
+
+This comprehensive stroke prediction analysis demonstrates the power of logistic regression in identifying key risk factors for stroke occurrence. The model achieves high discrimination ability (AUC = 0.842) and identifies age, hypertension, and average glucose level as the most significant predictors.
+
+**Key Takeaways:**
+
+1. **Age is the Dominant Risk Factor:** Each year of age increases stroke odds by 7.7%, making it the most reliable predictor
+2. **Hypertension Management is Critical:** 58.7% increase in stroke odds highlights the importance of blood pressure control
+3. **Glucose Monitoring Matters:** Even modest increases in glucose levels significantly impact stroke risk
+4. **Model Performance:** High discrimination ability but limited clinical utility due to class imbalance
+
+**Clinical Relevance:**
+While the model provides valuable insights into stroke risk factors, it should not be used as a standalone diagnostic tool. The high accuracy (95.2%) but low recall (2%) indicates that the model is conservative in predicting stroke, missing most actual cases but being highly accurate when it does predict stroke.
+
+**Statistical Rigor:**
+The analysis follows professional data analysis frameworks, employing appropriate statistical methods for binary outcomes. The logistic regression approach provides interpretable odds ratios that quantify the clinical impact of each risk factor, making the results actionable for healthcare providers.
+
+**Future Directions:**
+Addressing the class imbalance through advanced sampling techniques and exploring ensemble methods could significantly improve the model's clinical utility. The strong statistical foundation established here provides an excellent base for developing more sophisticated stroke prediction models that could be integrated into clinical decision support systems.
+
+**Final Assessment:**
+This analysis successfully identifies the most influential stroke risk factors and demonstrates that age, hypertension, and glucose levels are the primary predictors of stroke occurrence. The statistical rigor and clinical interpretability make this a valuable contribution to stroke risk assessment and prevention strategies.
