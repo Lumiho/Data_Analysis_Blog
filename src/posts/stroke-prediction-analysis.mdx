@@ -248,17 +248,62 @@ result = model.fit()
 **Odds Ratios Analysis:**
 The model provides interpretable odds ratios for each predictor:
 
-| Variable | Odds Ratio | Interpretation |
-|----------|------------|----------------|
-| hypertension | 1.587 | 58.7% increase in stroke odds |
-| work_type_children | 1.383 | 38.3% increase in stroke odds |
-| smoking_status_smokes | 1.293 | 29.3% increase in stroke odds |
-| heart_disease | 1.223 | 22.3% increase in stroke odds |
-| smoking_status_formerly smoked | 1.145 | 14.5% increase in stroke odds |
-| Residence_type_Urban | 1.085 | 8.5% increase in stroke odds |
-| age | 1.077 | 7.7% increase per year of age |
-| gender_Male | 1.067 | 6.7% increase for males |
-| avg_glucose_level | 1.004 | 0.4% increase per unit |
+<table>
+<thead>
+<tr>
+<th align="left">Variable</th>
+<th align="center">Odds Ratio</th>
+<th align="left">Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">hypertension</td>
+<td align="center">1.587</td>
+<td align="left">58.7% increase in stroke odds</td>
+</tr>
+<tr>
+<td align="left">work_type_children</td>
+<td align="center">1.383</td>
+<td align="left">38.3% increase in stroke odds</td>
+</tr>
+<tr>
+<td align="left">smoking_status_smokes</td>
+<td align="center">1.293</td>
+<td align="left">29.3% increase in stroke odds</td>
+</tr>
+<tr>
+<td align="left">heart_disease</td>
+<td align="center">1.223</td>
+<td align="left">22.3% increase in stroke odds</td>
+</tr>
+<tr>
+<td align="left">smoking_status_formerly smoked</td>
+<td align="center">1.145</td>
+<td align="left">14.5% increase in stroke odds</td>
+</tr>
+<tr>
+<td align="left">Residence_type_Urban</td>
+<td align="center">1.085</td>
+<td align="left">8.5% increase in stroke odds</td>
+</tr>
+<tr>
+<td align="left">age</td>
+<td align="center">1.077</td>
+<td align="left">7.7% increase per year of age</td>
+</tr>
+<tr>
+<td align="left">gender_Male</td>
+<td align="center">1.067</td>
+<td align="left">6.7% increase for males</td>
+</tr>
+<tr>
+<td align="left">avg_glucose_level</td>
+<td align="center">1.004</td>
+<td align="left">0.4% increase per unit</td>
+</tr>
+</tbody>
+</table>
 
 **Model Performance Metrics:**
 
@@ -322,6 +367,19 @@ The analysis generated a comprehensive ROC curve plot showing the model's discri
 - **Class Imbalance:** 95.1% non-stroke cases create prediction challenges
 - **Low Recall:** Model identifies only 2% of actual stroke cases
 - **High Precision:** When model predicts stroke, it's usually correct (100% precision)
+
+**Visual Analysis of Key Risk Factors:**
+
+The following Tableau visualizations provide additional insights into the relationship between the most significant predictors and stroke occurrence:
+
+![Age vs Stroke Tableau](/graphs/stroke/AgeXstrokeTbleau.png)
+*Figure 13: Age vs Stroke - Tableau visualization showing the relationship between age and stroke occurrence*
+
+![Glucose Level vs Stroke Tableau](/graphs/stroke/GlucoseXStrokeTableau.png)
+*Figure 14: Glucose Level vs Stroke - Tableau visualization showing the relationship between average glucose level and stroke occurrence*
+
+![Hypertension vs Stroke Tableau](/graphs/stroke/HypTensionXStrokeTableau.png)
+*Figure 15: Hypertension vs Stroke - Tableau visualization showing the relationship between hypertension status and stroke occurrence*
 
 ---
 
